@@ -1,0 +1,66 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> WinRAR漏洞复现过程 · 浮萍's Blog</title><meta name="description" content="WinRAR漏洞复现过程 - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">WinRAR漏洞复现过程</h1><div class="post-info">Feb 21, 2019<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/Exploit/" class="post-category">#Exploit</a></div><div class="post-content"><h2 id="0x01-漏洞描述"><a href="#0x01-漏洞描述" class="headerlink" title="0x01 漏洞描述"></a>0x01 漏洞描述</h2><p>近日Check Point团队爆出了一个关于WinRAR存在19年的漏洞，用它来可以获得受害者计算机的控制。攻击者只需利用此漏洞构造恶意的压缩文件，当受害者使用WinRAR解压该恶意文件时便会触发漏洞。</p>
+<a id="more"></a>
+
+<p>该漏洞是由于 WinRAR 所使用的一个陈旧的动态链接库<code>UNACEV2.dll</code>所造成的，该动态链接库在 2006 年被编译，没有任何的基础保护机制(ASLR, DEP 等)。动态链接库的作用是处理 ACE 格式文件。而WinRAR解压ACE文件时，由于没有对文件名进行充分过滤，导致其可实现目录穿越，将恶意文件写入任意目录,甚至可以写入文件至开机启动项，导致代码执行。</p>
+<h2 id="0x02-漏洞影响"><a href="#0x02-漏洞影响" class="headerlink" title="0x02 漏洞影响"></a>0x02 漏洞影响</h2><p>影响软件：</p>
+<p>WinRAR     &lt; 5.70 Beta 1</p>
+<p>Bandizip    &lt; = 6.2.0.0</p>
+<p>好压(2345压缩)    &lt; = 5.9.8.10907</p>
+<p>360压缩    &lt; = 4.0.0.1170</p>
+<p>等等…</p>
+<h2 id="0x03-漏洞复现"><a href="#0x03-漏洞复现" class="headerlink" title="0x03 漏洞复现"></a>0x03 漏洞复现</h2><p>该漏洞的实现过程：首先新建一个任意文件，然后利用WinACE进行压缩，修改filename来实现目录穿越漏洞，可以将文件解压到任意目录中。</p>
+<p>主要所需工具<a href="https://web.archive.org/web/20170714193504/http:/winace.com:80/" target="_blank" rel="noopener"><code>WinACE</code></a>、010Editor。</p>
+<p>下载WinACE并安装，安装完成后新建一个文本文件，名字任意。</p>
+<p><img src="01.png" alt=""></p>
+<p>然后利用WinACE进行压缩。</p>
+<p><img src="02.png" alt=""></p>
+<p>然后我们下载<a href="https://github.com/droe/acefile/blob/master/acefile.py" target="_blank" rel="noopener">acefile.py</a>脚本。</p>
+<p>使用命令<code>python acefile.py --headers liehu.ace</code>来读取该文件头信息。</p>
+<p><img src="03.png" alt=""></p>
+<p>根据漏洞的描述，问题是出现在filename中的。那主要就看下面的header吧。</p>
+<p>用010Editor打开该文件。</p>
+<p><img src="04.png" alt=""></p>
+<p>需要看选中的部分。对比acefile解析的结果，并明白各个段对应的内容。</p>
+<p><img src="05.png" alt=""></p>
+<p>如果要修改filename，则需要修改上面标注这几处。第一处为0x4e9a(hdr_crc),第二处为0x0044(hdr_size)，第三处为0x0025(filename的长度），以及最后一处为filename。</p>
+<p>修改顺序是由后到前。</p>
+<p>这里修改filename为<code>d:\d:\liehu.txt</code></p>
+<p>长度为15，对应的hex为0x000f</p>
+<p><img src="06.png" alt=""></p>
+<p>然后修改hdr_size，长度为46，对应的hex为0x002E。</p>
+<p><img src="07.png" alt=""></p>
+<p>接下来就是修改hdr_crc了，这里有一个取巧的方法。</p>
+<p>我们再次运行命令<code>python acefile.py --headers liehu.ace</code></p>
+<p>程序中断并提示<code>CorruptedArchiveError: header CRC failed</code></p>
+<p>定位到错误的位置</p>
+<p><img src="08.png" alt=""></p>
+<p>这里<code>ace_crc16(buf)</code>的值就是ace文件0x4e9a对应的值，直接打印出该值并将该位置的值修改即可。</p>
+<p><img src="09.png" alt=""></p>
+<p>对应的值为63232，转换为hex为0xF700。</p>
+<p><img src="10.png" alt=""></p>
+<p>最后文件内容为</p>
+<p><img src="11.png" alt=""></p>
+<p>再次查看，可以正常解析，并看到filename已经修改成功</p>
+<p><img src="12.png" alt=""></p>
+<p>右键解压该文件，则会在D盘生成一个liehu.txt文件。</p>
+<p><img src="13.png" alt=""></p>
+<p>测试文件：</p>
+<p><a href="https://fuping.site/files/liehu.ace">https://fuping.site/files/liehu.ace</a></p>
+<blockquote>
+<p>解压后会在D盘生成一个liehu.txt文件</p>
+</blockquote>
+<p>测试脚本：</p>
+<p><a href="https://github.com/fupinglee/MyPython/blob/master/exploit/WinRAR_exploit/WinRAR_exploit.py" target="_blank" rel="noopener">https://github.com/fupinglee/MyPython/blob/master/exploit/WinRAR_exploit/WinRAR_exploit.py</a></p>
+<h2 id="0x04-修复建议"><a href="#0x04-修复建议" class="headerlink" title="0x04 修复建议"></a>0x04 修复建议</h2><p>有两种方式</p>
+<ol>
+<li><p>升级到最新版本，WinRAR 目前版本是 5.70 Beta 1</p>
+</li>
+<li><p>删除UNACEV2.dll文件</p>
+</li>
+</ol>
+<p><img src="14.png" alt=""></p>
+<p>此时再次解压恶意文件会提示如下错误：</p>
+<p><img src="15.png" alt=""></p>
+<h2 id="0x05-参考"><a href="#0x05-参考" class="headerlink" title="0x05 参考"></a>0x05 参考</h2><p><a href="https://research.checkpoint.com/extracting-code-execution-from-winrar/" target="_blank" rel="noopener">https://research.checkpoint.com/extracting-code-execution-from-winrar/</a></p>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/WinRAR%E6%BC%8F%E6%B4%9E/">#WinRAR漏洞</a></p></article></div><footer><div class="paginator"><a href="/2019/10/25/charles-crack/" class="prev">PREV</a><a href="/2019/02/13/SoulAPP-SSL-Bypass/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2020 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

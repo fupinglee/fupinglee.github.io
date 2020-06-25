@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+
+	<head>
+		<meta charset="UTF-8">
+		<title>ckplayer</title>
+		
+		<style type="text/css">body{margin:0;padding:0px;font-family:"Microsoft YaHei",YaHei,"微软雅黑",SimHei,"黑体";font-size:14px}</style>
+
+	</head>
+
+	<body>
+		<div id="video" style="width: 600px; height: 400px;"></div>
+		<script type="text/javascript" src="js/ckplayer/ckplayer.js"></script>
+		<script type="text/javascript">
+			var videoObject = {
+				container: '#video', //容器的ID或className
+				variable: 'player',//播放函数名称
+				poster:'../material/poster.jpg',//封面图片
+				video:'https://youku.mhyunbo.com/20191126/VCEhLMKo/index.m3u8',
+				
+			};
+			var player = new ckplayer();
+			player.embed(videoObject);
+		</script>
+		<script>
+			
+			function mPlay(video){
+				var videoObject = {
+				container: '#video',  
+				variable: 'player', 
+				poster:'../material/poster.jpg',//封面图片
+				video:video,
+				
+			};
+			var player = new ckplayer();
+			player.embed(videoObject);
+
+			}
+		</script>
+		
+		<p>正在播放：
+			<select onchange="mPlay(this.options[this.options.selectedIndex].value)">
+ 		 		<option value="https://youku.mhyunbo.com/20191126/VCEhLMKo/index.m3u8">第01集</option>
+				<option value="https://youku.mhyunbo.com/20191126/FWVeI4Yo/index.m3u8">第02集</option>
+				<option value="https://youku.mhyunbo.com/20191126/l7y0gnAK/index.m3u8">第03集</option>
+				<option value="https://youku.mhyunbo.com/20191126/tHEAWdgV/index.m3u8">第04集</option>
+				<option value="https://tudou.mhyunbo.com/20191127/CgEsFHiQ/index.m3u8">第05集</option>
+				<option value="https://tudou.mhyunbo.com/20191127/JBSEDKZ2/index.m3u8">第06集</option>
+				<option value="https://tudou.mhyunbo.com/20191127/IWUziU4j/index.m3u8">第07集</option>
+				<option value="https://tudou.mhyunbo.com/20191127/f56MWKy4/index.m3u8">第08集</option>
+				<option value="https://youku.mhyunbo.com/20191202/1CSjTg2s/index.m3u8">第09集</option>
+				<option value="https://youku.mhyunbo.com/20191202/lvWUEni2/index.m3u8">第10集</option>
+				<option value="https://youku.mhyunbo.com/20191202/igC3Puk5/index.m3u8">第11集</option>
+				<option value="https://youku.mhyunbo.com/20191203/QE3ztXjs/index.m3u8">第12集</option>
+				<option value="https://tudou.mhyunbo.com/20191202/zCEqus5R/index.m3u8">第13集</option>
+				<option value="https://tudou.mhyunbo.com/20191204/UkQUimjA/index.m3u8">第14集</option>
+				<option value="https://tudou.mhyunbo.com/20191204/t7I6hMSH/index.m3u8">第15集</option>
+				<option value="https://youku.mhyunbo.com/20191209/uvny0Fn8/index.m3u8">第16集</option>
+				<option value="https://youku.mhyunbo.com/20191209/s4LjshZo/index.m3u8">第17集</option>
+				<option value="https://youku.mhyunbo.com/20191210/PegGEV4h/index.m3u8">第18集</option>
+				<option value="https://youku.mhyunbo.com/20191210/nuebOmlI/index.m3u8">第19集</option>
+				<option value="https://3.mhbobo.com/20191210/2Dg6f0QC/index.m3u8">第20集</option>
+				<option value="https://3.mhbobo.com/20191210/3fILB9aB/index.m3u8">第21集</option>
+				<option value="https://tudou.mhyunbo.com/20191211/EiEfK7Qg/index.m3u8">第22集</option>
+				<option value="https://tudou.mhyunbo.com/20191211/NaC4xPh2/index.m3u8">第23集</option>
+				<option value="https://youku.mhyunbo.com/20191211/SiCH4H3c/index.m3u8">第24集</option>
+				<option value="https://youku.mhyunbo.com/20191211/RxWRpqrx/index.m3u8">第25集</option>
+				<option value="https://youku.mhyunbo.com/20191211/CJqEiLXy/index.m3u8">第26集</option>
+				<option value="https://youku.mhyunbo.com/20191211/HKf0k80h/index.m3u8">第27集</option>
+			</select>
+
+		</p>
+		<p>前几集可能无法播放，可以观看后面的。</p>
+		<p>可能失效，失效勿扰～～～～。</p>
+	</body>
+
+</html>

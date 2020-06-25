@@ -1,0 +1,128 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 自动化测试工具Appium初探 · 浮萍's Blog</title><meta name="description" content="自动化测试工具Appium初探 - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">自动化测试工具Appium初探</h1><div class="post-info">May 29, 2020<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/" class="post-category">#自动化测试</a></div><div class="post-content"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>前段时间由于给小破站开启了青少年模式，结果密码给忘记了。导致只能看一些学习课堂和书法之类的相关视频。虽然有找回密码选项，但是找回密码需要发送本人手持身份证的照片。而后在输入密码的时候试了多次，除了提示”密码输入错误，请重试”外，没有其他限制，也没有网络请求。由于是4位的数字密码，我想如果我写个自动输入密码的脚本，利用生成<code>0000</code>~<code>9999</code>的密码字典，应该就可以找到正确的密码。</p>
+<a id="more"></a>
+
+<p>经搜索发现，IOS自动化的框架有很多，如UIAutomation、XCTest、KIF、APPium等。其中UIAutomation和APPium无需源码就可以进行测试，而且APPium支持多种语言，所以这里我选择了<a href="http://appium.io/" target="_blank" rel="noopener">APPium</a>。</p>
+<h2 id="0x02-环境搭建与自动化测试"><a href="#0x02-环境搭建与自动化测试" class="headerlink" title="0x02 环境搭建与自动化测试"></a>0x02 环境搭建与自动化测试</h2><h3 id="Appium相关介绍"><a href="#Appium相关介绍" class="headerlink" title="Appium相关介绍"></a>Appium相关介绍</h3><p>Appium 是一个开源工具，用于自动化 iOS 手机、 Android 手机和 Windows 桌面平台上的原生、移动 Web 和混合应用。 它使用WebDriver协议驱动iOS，Android和Windows应用程序。Appium 是跨平台的：它允许用同样的 API 对多平台（iOS、Android、Windows）写测试，做到在 iOS、Android 和 Windows 测试套件之间复用代码。而且支持多种语言，java、python、php、Ruby等等。</p>
+<p>我这里是在MacOS系统下进行的测试，采用了手机版本为13.5.1（IOS真机），开发语言选择了Python3.8。</p>
+<p>下面就开始搭建环境进行测试吧。</p>
+<p>首先是APPium的安装。</p>
+<h3 id="APPium相关安装"><a href="#APPium相关安装" class="headerlink" title="APPium相关安装"></a>APPium相关安装</h3><p>如果没有安装Homebrew，则需要先安装<a href="https://brew.sh/" target="_blank" rel="noopener">Homebrew</a>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">/bin/bash -c <span class="string">"<span class="variable">$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)</span>"</span></span><br></pre></td></tr></table></figure>
+
+<p>安装node</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">brew install node</span><br></pre></td></tr></table></figure>
+
+<p>安装相关依赖与软件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">npm install -g appium <span class="comment"># 安装appium</span></span><br><span class="line">npm install wd</span><br><span class="line">npm install -g appium-doctor</span><br><span class="line">npm i -g mjpeg-consumer</span><br><span class="line">brew install ios-deploy</span><br><span class="line">brew install carthage</span><br><span class="line">brew install lyft/formulae/<span class="built_in">set</span>-simulator-location</span><br><span class="line">npm i -g opencv4nodejs</span><br><span class="line">brew tap facebook/fb</span><br><span class="line">brew install idb-companion</span><br><span class="line">pip install fb-idb</span><br><span class="line">brew tap wix/brew</span><br><span class="line">brew install applesimutils</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>安装的话根据可以参考<a href="http://appium.io/docs/en/about-appium/getting-started/" target="_blank" rel="noopener">http://appium.io/docs/en/about-appium/getting-started/</a> 进行安装。</p>
+<p>也可以直接安装appium桌面程序<a href="https://github.com/appium/appium-desktop/releases" target="_blank" rel="noopener">https://github.com/appium/appium-desktop/releases</a> 。</p>
+</blockquote>
+<p>安装后执行<code>appium-doctor --ios</code>指令，可以查看与iOS相关配置是否完整。</p>
+<p>如果有哪一项是打叉的，则根据安装说明进行安装就可以了。</p>
+<p><img src="02.png" alt=""></p>
+<p>下图是全部配置都成功的情况。</p>
+<p><img src="01.png" alt=""></p>
+<p>由于需要在真机下进行测试所以还需要配置<a href="https://github.com/facebookarchive/WebDriverAgent" target="_blank" rel="noopener">WebDriverAgent</a>。</p>
+<h3 id="配置WebDriverAgent"><a href="#配置WebDriverAgent" class="headerlink" title="配置WebDriverAgent"></a>配置WebDriverAgent</h3><p>下载<a href="https://github.com/facebookarchive/WebDriverAgent" target="_blank" rel="noopener">WebDriverAgent</a>。</p>
+<p>进入到WebDriverAgent目录，然后执行<code>./Scripts/bootstrap.sh</code>下载安装依赖库。</p>
+<p><img src="03.png" alt=""></p>
+<p>双击<code>WebDriverAgent.xcodeproj</code>使用xcode打开WebDriverAgent项目</p>
+<p>配置<code>WebDriverAgentLib</code>、<code>WebDriverAgentRunner</code>以及<code>IntegrationApp</code>的开发者信息</p>
+<p><img src="04.png" alt=""></p>
+<p>发现有错误，接下来修改<code>WebDriverAgentRunner</code>和<code>IntegrationApp</code>的<code>Bundle identifier</code>。</p>
+<p><img src="05.png" alt="修改WebDriverAgentRunner"></p>
+<p><img src="06.png" alt="修改IntegrationApp"></p>
+<p>修改后发现无报错信息。然后数据线连接真机，进行安装。</p>
+<p>发现编译失败，将 <code>assign</code> 改成 <code>unsafe_unretained</code> ，然后重新使用<code>command + u</code>进行编译安装测试。</p>
+<p><img src="07.png" alt=""></p>
+<p>然后访问<code>http://手机IP:8100</code>。如<a href="http://172.20.10.1:8100/status" target="_blank" rel="noopener">http://172.20.10.1:8100/status</a> 。</p>
+<p><img src="08.png" alt=""></p>
+<blockquote>
+<p>需要手机与电脑处于同一网络下，我这里为了测试，电脑连接的是手机的热点。</p>
+</blockquote>
+<p>此时WebDriverAgent配置成功。如果在Appium中使用时，还需替换Appium中的WebDriverAgent。</p>
+<p>我这里的路径为<code>/Applications/Appium.app/Contents/Resources/app/node_modules/appium/node_modules/appium-xcuitest-driver/node_modules/WebDriverAgent</code></p>
+<p>直接替换即可，或者直接修改Appium中的WebDriverAgent，效果一样。</p>
+<p>接下来就是自动化脚本的编写。</p>
+<h3 id="自动化脚本编写"><a href="#自动化脚本编写" class="headerlink" title="自动化脚本编写"></a>自动化脚本编写</h3><p>可以通过使用Appium应用程序查看IOS元素特征。启动Appium，左上角菜单栏选择<code>APPium</code>-<code>New Session Window...</code>(或者快捷键<code>command+N</code>)。</p>
+<p><img src="09.png" alt=""></p>
+<p>填写对应的启动参数。</p>
+<p>一些必要的参数：</p>
+<ul>
+<li>platformName是测试平台的名称，是ios或者Android。</li>
+<li>udid在ios真机测试时需要，可以通过<code>ios-deploy --list_bundle_id</code>查询</li>
+<li>bundleId需测试程序的bundle id,可以通过<code>ios-deploy --list_bundle_id</code>查询</li>
+</ul>
+<p>配置完成后，点击<code>Start Session</code>，手机会自动打开<code>哔哩哔哩</code>APP。</p>
+<p><img src="10.png" alt=""></p>
+<p>可以利用xpath获取元素并进行输入、点击等一系列操作。接下来就可以通过使用Python脚本来进行自动化测试了。</p>
+<p>需要安装appium的python依赖库。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install Appium-Python-Client</span><br></pre></td></tr></table></figure>
+
+<p>启动APP的脚本如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> appium <span class="keyword">import</span> webdriver <span class="comment">#pip install Appium-Python-Client</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    desired_caps = dict()</span><br><span class="line">    desired_caps[<span class="string">'platformName'</span>] = <span class="string">'iOS'</span></span><br><span class="line">    desired_caps[<span class="string">'platformVersion'</span>] = <span class="string">'13.5.1'</span></span><br><span class="line">    desired_caps[<span class="string">'deviceName'</span>] = <span class="string">'xiamo6'</span></span><br><span class="line">    desired_caps[<span class="string">'automationName'</span>] = <span class="string">'XCUITest'</span></span><br><span class="line">    desired_caps[<span class="string">'udid'</span>] = <span class="string">'8d4************a3'</span></span><br><span class="line">    desired_caps[<span class="string">'bundleId'</span>] = <span class="string">'tv.danmaku.bilianime'</span></span><br><span class="line">    driver = webdriver.Remote(<span class="string">'http://localhost:4723/wd/hub'</span>, desired_caps)</span><br><span class="line"></span><br><span class="line">    time.sleep(<span class="number">5</span>)</span><br><span class="line">    driver.quit()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	main()</span><br></pre></td></tr></table></figure>
+
+<p>运行效果如下：</p>
+<p><img src="11.gif" alt="运行效果"></p>
+<p>接下来需要进入到输入密码界面，依次需要点击<code>我的-青少年模式-修改密码（或者关闭青少年模式）</code>。</p>
+<p>利用脚本实现就是：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">driver.find_element_by_id(<span class="string">"我的"</span>).click()</span><br><span class="line">driver.find_element_by_xpath(<span class="string">"//XCUIElementTypeStaticText[@name=\"青少年模式\"]"</span>).click()</span><br><span class="line">driver.find_element_by_id(<span class="string">"关闭青少年模式"</span>).click()</span><br></pre></td></tr></table></figure>
+
+<p>运行效果如下</p>
+<p><img src="12.gif" alt="运行效果"></p>
+<blockquote>
+<p>如果是已经打开app 40分钟，或者非正常时段，则直接显示的是输入密码界面。</p>
+</blockquote>
+<p><img src="12.png" alt="运行效果"></p>
+<p>可以利用xpath获取密码输入框元素，输入密码后并点击“立即验证”按钮，主要代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">driver.set_value(driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeStaticText[1]"</span>),pwd[<span class="number">0</span>])</span><br><span class="line">driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeStaticText[2]"</span>).send_keys(pwd[<span class="number">1</span>])</span><br><span class="line">driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeStaticText[3]"</span>).send_keys(pwd[<span class="number">2</span>])</span><br><span class="line">driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeStaticText[4]"</span>).send_keys(pwd[<span class="number">3</span>])</span><br><span class="line">driver.find_element_by_xpath(<span class="string">"//XCUIElementTypeButton[@name=\"立即验证\"]"</span>).click()</span><br></pre></td></tr></table></figure>
+
+<p>完整的代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> appium <span class="keyword">import</span> webdriver <span class="comment">#pip install Appium-Python-Client</span></span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    desired_caps = dict()</span><br><span class="line">    desired_caps[<span class="string">'platformName'</span>] = <span class="string">'iOS'</span></span><br><span class="line">    desired_caps[<span class="string">'platformVersion'</span>] = <span class="string">'13.5.1'</span></span><br><span class="line">    desired_caps[<span class="string">'deviceName'</span>] = <span class="string">'xiamo6'</span></span><br><span class="line">    desired_caps[<span class="string">'automationName'</span>] = <span class="string">'XCUITest'</span></span><br><span class="line">    desired_caps[<span class="string">'udid'</span>] = <span class="string">'8d4904454b********552e976a3'</span></span><br><span class="line">    desired_caps[<span class="string">'bundleId'</span>] = <span class="string">'tv.danmaku.bilianime'</span></span><br><span class="line">    driver = webdriver.Remote(<span class="string">'http://localhost:4723/wd/hub'</span>, desired_caps)</span><br><span class="line">    <span class="keyword">for</span> p <span class="keyword">in</span> range(<span class="number">5091</span>,<span class="number">10000</span>):</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            pwd = str(p)</span><br><span class="line">            driver.set_value(driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeStaticText[1]"</span>),pwd[<span class="number">0</span>])</span><br><span class="line">            driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeStaticText[2]"</span>).send_keys(pwd[<span class="number">1</span>])</span><br><span class="line">            driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeStaticText[3]"</span>).send_keys(pwd[<span class="number">2</span>])</span><br><span class="line">            driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeStaticText[4]"</span>).send_keys(pwd[<span class="number">3</span>])</span><br><span class="line">            driver.find_element_by_xpath(<span class="string">"//XCUIElementTypeButton[@name=\"立即验证\"]"</span>).click()</span><br><span class="line">            print(pwd,<span class="string">'error'</span>)</span><br><span class="line">        <span class="keyword">except</span> Exception:</span><br><span class="line">            print(pwd,<span class="string">'is right'</span>)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line"></span><br><span class="line">     driver.quit()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	main()</span><br></pre></td></tr></table></figure>
+
+<p>运行效果</p>
+<p><img src="13.gif" alt="运行效果"></p>
+<p>由上面执行的结果来看，每次输入前都会等待一会再输入，所以看起来速度很慢。</p>
+<p><img src="14.png" alt="运行效果"></p>
+<p>通过找到上图标记的<code>XCUIElementTypeOther</code>，然后使用<code>Send Keys</code>直接传入一个四位数字。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">driver.find_element_by_xpath(<span class="string">"//*/XCUIElementTypeWindow[1]/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther/XCUIElementTypeOther"</span>).send_keys(pwd)</span><br><span class="line">driver.find_element_by_xpath(<span class="string">"//XCUIElementTypeButton[@name=\"下一步\"]"</span>).click()</span><br></pre></td></tr></table></figure>
+
+<p>执行结果如图所示。</p>
+<p><img src="15.gif" alt="运行效果"></p>
+<blockquote>
+<p>这里的动图是4倍速播放。</p>
+</blockquote>
+<p>修改过后，发现速度确实有所提升，但是总体速度还是很慢的。经过搜索发现，有帖子说在IOS模拟器上和安卓上会快一些，由于程序无法安装到IOS模拟器，所以这里选择了在安卓设备上进行测试。</p>
+<h3 id="安卓环境下测试"><a href="#安卓环境下测试" class="headerlink" title="安卓环境下测试"></a>安卓环境下测试</h3><p>安卓的环境需要安装Android SDK、JDK、安卓模拟器(真机也可以，这里采用的是Genymotion模拟器)。安装后配置<code>JAVA_HOME</code>、<code>ANDROID_HOME</code>。</p>
+<p>然后通过执行<code>appium-doctor --android</code>来查看是否配置成功，如图所示。</p>
+<p><img src="15.png" alt="运行效果"></p>
+<p>查看android元素信息可以使用<code>uiautomatorviewer</code>。位于Android SDK下的<code>/tools/bin/</code>目录。</p>
+<p>启动模拟器并打开测试的APP，然后打开<code>uiautomatorviewer</code>。选择<code>Device Screenshot</code>（从左至右第二个图标）。</p>
+<p><img src="16.png" alt="运行效果"></p>
+<p>通过<code>tv.danmaku.bili:id/et_code</code>可以定位到编辑框，按钮“立即验证”可以通过<code>tv.danmaku.bili:id/operate</code>来定位。</p>
+<p>这里直接贴使用安卓下自动化爆破的脚本，代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> appium <span class="keyword">import</span> webdriver</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span><span class="params">()</span>:</span></span><br><span class="line">    desired_caps = dict()</span><br><span class="line">    desired_caps[<span class="string">'platformName'</span>] = <span class="string">'Android'</span></span><br><span class="line">    desired_caps[<span class="string">'platformVersion'</span>] = <span class="string">'6.0'</span></span><br><span class="line">    desired_caps[<span class="string">'deviceName'</span>] = <span class="string">'Nexus'</span></span><br><span class="line">    desired_caps[<span class="string">'appPackage'</span>] = <span class="string">'tv.danmaku.bili'</span></span><br><span class="line">    desired_caps[<span class="string">'appActivity'</span>] = <span class="string">'ui.splash.SplashActivity'</span></span><br><span class="line">    desired_caps[<span class="string">'noReset'</span>] = <span class="literal">True</span></span><br><span class="line">    desired_caps[<span class="string">'automationName'</span>] = <span class="string">'UiAutomator2'</span></span><br><span class="line"></span><br><span class="line">    driver = webdriver.Remote(<span class="string">'http://localhost:4723/wd/hub'</span>, desired_caps)</span><br><span class="line">    </span><br><span class="line">    <span class="keyword">for</span> pwd <span class="keyword">in</span> range(<span class="number">4011</span>,<span class="number">10000</span>):</span><br><span class="line">        <span class="keyword">try</span>:</span><br><span class="line">            driver.find_element_by_id(<span class="string">'tv.danmaku.bili:id/et_code'</span>).send_keys(pwd)</span><br><span class="line">            driver.find_element_by_id(<span class="string">"tv.danmaku.bili:id/operate"</span>).click()</span><br><span class="line">            print(pwd,<span class="string">'error'</span>)</span><br><span class="line">        <span class="keyword">except</span> Exception:</span><br><span class="line">            print(pwd,<span class="string">'is right'</span>)</span><br><span class="line">            <span class="keyword">break</span></span><br><span class="line">    time.sleep(<span class="number">4</span>)</span><br><span class="line">    driver.quit()</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">'__main__'</span>:</span><br><span class="line">	main()</span><br></pre></td></tr></table></figure>
+
+
+
+<p>运行效果如图所示</p>
+<p><img src="17.gif" alt="运行效果"></p>
+<p>对比之下，在Android下的效率是很快的。而且经过测试，安卓破解100次，耗时约<code>139.14s</code>，而ios破解50次，耗时约<code>262.56s</code>。</p>
+<p>所以最后我采用了安卓环境下进行破解，最终成功跑出了密码。</p>
+<p><img src="18.gif" alt="运行效果"></p>
+<p>已经成功找到密码4578。</p>
+<h2 id="0x03-思考"><a href="#0x03-思考" class="headerlink" title="0x03 思考"></a>0x03 思考</h2><p>由于输入密码的时候并没有发生网络请求，猜测密码应该保存在本地。一般情况下本地存储采用sqlite数据库或者是SharePreferences中。</p>
+<p>先查看SharePreferences中的文件，进入<code>/data/data/tv.danmaku.bili/shared_prefs</code>目录。</p>
+<p><img src="17.png" alt="shared_prefs目录"></p>
+<p>发现文件<code>bili_teenagers_mode_preferences20449166.xml</code>，根据文件名发现文件就是和青少年模式有关的配置文件。查看里面的内容</p>
+<p><img src="18.png" alt="teenagers_mode文件"></p>
+<p>发现一串神秘字符串，通过cmd5查询：c2890d44d06bafb6c7b4aa194857ccbc=md5(4578)。正好是设置的密码。</p>
+<p>另外由于登录前可以看到所有的内容，而登录开启青少年模式的账户时，就会进入青少年模式，只能看特定内容。所以退出账户重新登录并抓包，可以看到如下的请求。</p>
+<p><img src="19.png" alt="抓包"></p>
+<p>也成功找到经过md5加密的密码。</p>
+<h2 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h2><p>这次是因为B站开启了青少年模式，后来密码给忘记了。当时只想着用爆破的方式来解决了，没有想着抓包或者查看保存的数据文件。后来爆破出密码后，又发现可以通过查看配置文件的方式和抓包的方式找到密码。而且之前是打算用ios作为测试的，后来因为效率的问题，才转战安卓。如果使用安卓的话，自动化测试工具也很多，例如UIAutomator2等。</p>
+<p>本文其实就是一个流水账，记录一下自己找回青少年模式密码的过程，可能比较粗糙。有关IOS真机调试更详细的教程可以参考<a href="https://www.jianshu.com/p/ae8846736dba" target="_blank" rel="noopener">使用Appium进行iOS的真机自动化测试</a> 。</p>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/Appium/">#Appium</a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">#自动化测试</a><a href="/tags/%E9%9D%92%E5%B0%91%E5%B9%B4%E6%A8%A1%E5%BC%8F/">#青少年模式</a></p></article></div><footer><div class="paginator"><a href="/2020/04/18/WeiQing-CMS-Background-Admin-GetShell/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2020 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

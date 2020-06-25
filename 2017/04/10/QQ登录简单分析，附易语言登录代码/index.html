@@ -1,0 +1,101 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> QQ登录简单分析，附易语言登录代码 · 浮萍's Blog</title><meta name="description" content="QQ登录简单分析，附易语言登录代码 - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">QQ登录简单分析，附易语言登录代码</h1><div class="post-info">Apr 10, 2017<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/%E7%BC%96%E7%A8%8B%E5%BC%80%E5%8F%91/" class="post-category">#编程开发</a></div><div class="post-content"><p>这里参考了QQ登录的组件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://ui.ptlogin2.qq.com/cgi-bin/login?hide_title_bar=0&amp;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;appid=636014201&amp;target=self&amp;s_url=http%3A//www.qq.com/qq2012/loginSuccess.htm</span><br></pre></td></tr></table></figure>
+<a id="more"></a>
+<p><img src="%E7%99%BB%E5%BD%95%E7%BB%84%E4%BB%B6.png" alt="登录组件"></p>
+<p>QQ登录有两种情况，一种是需要验证码，一种是不需要验证码。需要验证码的稍微复杂一点，这里首先介绍一下不需要验证码的情况。</p>
+<h3 id="一、无需验证码"><a href="#一、无需验证码" class="headerlink" title="一、无需验证码"></a>一、无需验证码</h3><h4 id="第一步：获取-login-sig"><a href="#第一步：获取-login-sig" class="headerlink" title="第一步：获取 login_sig"></a>第一步：获取 login_sig</h4><p>这是登录所需要的第一步，无论是否需要验证码，都需要进行这一步。<br>访问如下地址：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://ui.ptlogin2.qq.com/cgi-bin/login?hide_title_bar=0&amp;low_login=0&amp;qlogin_auto_login=1&amp;no_verifyimg=1&amp;link_target=blank&amp;appid=636014201&amp;target=self&amp;s_url=http%3A//www.qq.com/qq2012/loginSuccess.htm</span><br></pre></td></tr></table></figure>
+<p>从返回的Cookie中获取 pt_login_sig的值，这个值就是login_sig</p>
+<p><img src="%E8%8E%B7%E5%8F%96login_sig%E7%9A%84%E5%80%BC.png" alt="获取login_sig的值"></p>
+<h4 id="第二步：获取-checkVC"><a href="#第二步：获取-checkVC" class="headerlink" title="第二步：获取 checkVC"></a>第二步：获取 checkVC</h4><p>这个字符串中包含了多个内容。有是否输入验证码的标志、verifycode、salt和pt_verifysession_v1（<strong>不需要输入验证码的情况下</strong>）。<br>请求地址：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://check.ptlogin2.qq.com/check?regmaster=&amp;pt_tea=2&amp;pt_vcode=1&amp;uin=QQ号码&amp;appid=636014201&amp;js_ver=10197&amp;js_type=1&amp;login_sig=GsmtnCcla5xHKS********T0U0npqlnD4bzXEMed&amp;u1=http%3A%2F%2Fwww.qq.com%2Fqq2012%2FloginSuccess.htm&amp;r=0.23528769960244944&amp;pt_uistyle=40</span><br></pre></td></tr></table></figure>
+<p>其中参数uin是登录的qq号码，login_sig是从第一步获取的值。<br><img src="%E8%8E%B7%E5%8F%96check_vc.png" alt="获取check_vc"><br>当然这种情况是在QQ号输入正确，并且不需要输入验证码时。<br>返回的内容如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ptui_checkVC(&#39;0&#39;,&#39;!BAF&#39;,&#39;\x00******\x64\x21\x97\x92&#39;,&#39;e9825f1e232302e01414bf9c37ac7d44942a40c89daaf5604ab11d54fff32445ad89e315e30a610e0aa77f46afedbaad83819c14230e7ec2&#39;,&#39;2&#39;);</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>第一个值表示是否需要图片验证码，0表示不需要<br>    第二值是verifycode，登录时需要<br>    第三个值是salt，QQ转换而来<br>    第四个值是pt_verifysession_v1</p>
+</blockquote>
+<h4 id="第三步：登录"><a href="#第三步：登录" class="headerlink" title="第三步：登录"></a>第三步：登录</h4><p>输入密码后点登录，请求包为：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://ptlogin2.qq.com/login?u=QQ号码&amp;verifycode=!BAF&amp;pt_vcode_v1=0&amp;pt_verifysession_v1=e9825f1e232302e01414bf9c37ac7d44942a40c89daaf5604ab11d54fff32445ad89e315e30a610e0aa77f46afedbaad83819c14230e7ec2&amp;p=w79Tqqx2glOF9meNNWhz5Ouow23EGt3zEl-y8vpVGFuHT6HJaFtRhVDlbpMj4a6plyrnIvW73uGXzVDwSt2e9wMHyFt9crtZ-N0xUx2wxFUen03ybw5HxzkPti3VyjSffID8GNkhDn1yYVPa1lyjHED2DCVd3rl9bysBPb*1imLSYY3jkQJpsXPS2kjxxlVxFBVHEHnSGSYaA3QBMXQ*NyQw7MkhVDsO7X8aljR0eApa*lgHoBsC4g3mTtEKcU5aslpcO4EPdUey0QA4YVh9zLzbLnkPJklcQYvoxlv6kLdYmoyORcVTM6IKqles7t5ot0mRWzjW923hV3X0PLRb6g__&amp;pt_randsalt=2&amp;u1=http%3A%2F%2Fwww.qq.com%2Fqq2012%2FloginSuccess.htm&amp;ptredirect=0&amp;h=1&amp;t=1&amp;g=1&amp;from_ui=1&amp;ptlang=2052&amp;action=4-8-1488010172151&amp;js_ver=10197&amp;js_type=1&amp;login_sig=GsmtnCcla5xHKSrRZ7ek0VU5-63oyUvqLk65vxoIG0kOFBT0U0npqlnD4bzXEMed&amp;pt_uistyle=40&amp;aid=636014201&amp;</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>参数名称</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>u</td>
+<td>用户输入。第二步骤中  uin的值</td>
+</tr>
+<tr>
+<td>verifycode</td>
+<td>第二步中ptui_checkVC第二个值。(这里的是!BAF)</td>
+</tr>
+<tr>
+<td>pt_verifysession_v1</td>
+<td>第二步中ptui_checkVC第四个值。即e9825f1….</td>
+</tr>
+<tr>
+<td>p</td>
+<td>加密后的密码</td>
+</tr>
+<tr>
+<td>login_sig</td>
+<td>第一步中返回Cookie中的 pt_login_sig值</td>
+</tr>
+<tr>
+<td>pt_randsalt</td>
+<td>pt_randsalt=0  旧版加密 ；pt_randsalt=2 新版RSA加密</td>
+</tr>
+</tbody></table>
+<p>密码加密的js代码地址<code>http://imgcache.qq.com/ptlogin/ver/10197/js/c_login_2.js</code>，注意看js版本，这里是js_ver为10197</p>
+<blockquote>
+<p>密码加密需要三个参数，第一个是pwd（用户密码），第二个是salt（第二步中获取ptui_checkVC 中的第三个值），第三个是verifycode（第二步中ptui_checkVC第二个值 ）</p>
+</blockquote>
+<p>用户名密码正确返回：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ptuiCB(&#39;0&#39;,&#39;0&#39;,&#39;http:&#x2F;&#x2F;www.qq.com&#x2F;qq2012&#x2F;loginSuccess.htm&#39;,&#39;0&#39;,&#39;登录成功！&#39;, &#39;QQ昵称&#39;);</span><br></pre></td></tr></table></figure>
+
+<p>用户名密码错误返回：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ptuiCB(&#39;3&#39;,&#39;0&#39;,&#39;&#39;,&#39;0&#39;,&#39;您输入的帐号或密码不正确，请重新输入。&#39;, &#39;&#39;);</span><br></pre></td></tr></table></figure>
+<p>附上一张登录成功的截图<br><img src="%E6%97%A0%E9%AA%8C%E8%AF%81%E7%A0%81%E7%99%BB%E5%BD%95%E6%88%90%E5%8A%9F.png" alt="无验证码登录成功"></p>
+<h3 id="二、需要输入验证码"><a href="#二、需要输入验证码" class="headerlink" title="二、需要输入验证码"></a>二、需要输入验证码</h3><h4 id="第一步：获取login-sig"><a href="#第一步：获取login-sig" class="headerlink" title="第一步：获取login_sig"></a>第一步：获取login_sig</h4><p>与上面无需验证码一样，就省略了。</p>
+<h4 id="第二步：获取cap-cd"><a href="#第二步：获取cap-cd" class="headerlink" title="第二步：获取cap_cd"></a>第二步：获取cap_cd</h4><p>请求：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://check.ptlogin2.qq.com/check?regmaster=&amp;pt_tea=2&amp;pt_vcode=1&amp;uin=987654321&amp;appid=636014201&amp;js_ver=10197&amp;js_type=1&amp;login_sig=KVSX9JmFKqCXlNi85SLXJnj5DqKPDzAYGwW3X5d3Wcnxd885YPFSeDU7ul15aTQp&amp;u1=http%3A%2F%2Fwww.qq.com%2Fqq2012%2FloginSuccess.htm&amp;r=0.8539291708517738&amp;pt_uistyle=40</span><br></pre></td></tr></table></figure>
+<p>返回</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ptui_checkVC(&#39;1&#39;,&#39;yrAL1AMRbUpQGrsQxy6HMhVQ1YIf--U0zK5wNm_wTOYi2YIrxt5H5w**&#39;,&#39;\x00\x00\x00\x00\x3a\xde\x68\xb1&#39;,&#39;&#39;,&#39;2&#39;);</span><br></pre></td></tr></table></figure>
+<p>cap_cd的值为<code>yrAL1AMRbUpQGrsQxy6HMhVQ1YIf--U0zK5wNm_wTOYi2YIrxt5H5w**</code></p>
+<h4 id="第三步：获取sess"><a href="#第三步：获取sess" class="headerlink" title="第三步：获取sess"></a>第三步：获取sess</h4><p>请求：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://captcha.qq.com/cap_union_new_gettype?aid=636014201&amp;asig=&amp;captype=&amp;protocol=http&amp;clientype=2&amp;disturblevel=&amp;apptype=2&amp;curenv=inner&amp;uid=987654321&amp;cap_cd=yrAL1AMRbUpQGrsQxy6HMhVQ1YIf--U0zK5wNm_wTOYi2YIrxt5H5w**&amp;lang=2052&amp;callback=_aq_453849</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>uid是qq号，cap_cd由第二步获取</p>
+</blockquote>
+<p>返回：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">_aq_453849(&#123;&quot;capclass&quot;:&quot;0&quot;,&quot;subcapclass&quot;:&quot;0&quot;,&quot;src&quot;:&quot;cap_union_new_show&quot;,&quot;sess&quot;:&quot;XiUr_hV-3RVfwQc2_01i1vZOI3BJdVr8AfA3-ZYIFztXD58CSfYICY_kwrJjpmvRtuAfMX50sJGC0c0D8W2kig**&quot;&#125;)</span><br></pre></td></tr></table></figure>
+
+<h4 id="第四步：获取visg"><a href="#第四步：获取visg" class="headerlink" title="第四步：获取visg"></a>第四步：获取visg</h4><p>请求：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://captcha.qq.com/cap_union_new_show?aid=636014201&amp;asig=&amp;captype=&amp;protocol=http&amp;clientype=2&amp;disturblevel=&amp;apptype=2&amp;curenv=inner&amp;sess=XiUr_hV-3RVfwQc2_01i1vZOI3BJdVr8AfA3-ZYIFztXD58CSfYICY_kwrJjpmvRtuAfMX50sJGC0c0D8W2kig**&amp;noBorder=noborder&amp;showtype=embed&amp;uid=987654321&amp;cap_cd=yrAL1AMRbUpQGrsQxy6HMhVQ1YIf--U0zK5wNm_wTOYi2YIrxt5H5w**&amp;lang=2052&amp;rnd=925999</span><br></pre></td></tr></table></figure>
+
+<p><img src="%E8%8E%B7%E5%8F%96visg.png" alt="获取visg"></p>
+<h4 id="第五步：获取图片验证码"><a href="#第五步：获取图片验证码" class="headerlink" title="第五步：获取图片验证码"></a>第五步：获取图片验证码</h4><p>访问地址：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://captcha.qq.com/cap_union_new_getcapbysig?aid=549000912&amp;asig=&amp;captype=&amp;protocol=http&amp;clientype=2&amp;disturblevel=&amp;apptype=2&amp;curenv=inner&amp;sess=” ＋ sess ＋ “&amp;noBorder=noborder&amp;showtype=embed&amp;uid=” ＋ uin ＋ “&amp;cap_cd=” ＋ cap_cd ＋ “&amp;lang=2052&amp;rnd=117715&amp;rand=0.5497459754332915&amp;vsig=” ＋ vsig ＋ “&amp;ischartype=1</span><br></pre></td></tr></table></figure>
+
+<h4 id="第六步：验证验证码，获取verifycode和pt-verifysession-v1"><a href="#第六步：验证验证码，获取verifycode和pt-verifysession-v1" class="headerlink" title="第六步：验证验证码，获取verifycode和pt_verifysession_v1"></a>第六步：验证验证码，获取verifycode和pt_verifysession_v1</h4><p>post请求：<br><code>http://captcha.qq.com/cap_union_new_verify?random=1488013134675</code></p>
+<p>提交内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aid=636014201&amp;asig=&amp;captype=&amp;protocol=http&amp;clientype=2&amp;disturblevel=&amp;apptype=2&amp;curenv=inner&amp;sess=XiUr_hV-3RVfwQc2_01i1vZOI3BJdVr8AfA3-ZYIFztXD58CSfYICY_kwrJjpmvRtuAfMX50sJGC0c0D8W2kig**&amp;noBorder=noborder&amp;showtype=embed&amp;uid=QQ号码&amp;cap_cd=yrAL1AMRbUpQGrsQxy6HMhVQ1YIf--U0zK5wNm_wTOYi2YIrxt5H5w**&amp;lang=2052&amp;rnd=925999&amp;subcapclass=0&amp;vsig=g3GflfnCicbaqub3e-SVo2azImuo1gDzQfnGkRnhI-uqLlIXtY6XyXE1dDjUBJHOXCPewnnTo-4mPTtRjScTD9uZaPu4z3x1Jj6inepPQ8l8KCeFeN9laBpiWdqaOF4Eg&amp;cdata=0&amp;collect=OD6q9t0AraWJf%2Bdtq0j8VvuOrjmT8T%2F%2FW8E83RE208unUG0TO1T5psMsZH1p5SXS12WpjU2CcGKHMsp7fciMTLiLY3wUwJBjBxWSqfu%2FbhfCTKUtJdBPeE6P%2FsRfdwemWRYRQwRgdvXZuc42JOqfDIfD%2F2%2B2GeYYxOPohbqY%2BWcW%2Fcut%2BGLcKpJGFTzBtPzKDLU6fTPn6MC%2FNiRGWGehwTy52MK0dIVdd5BYlPQrhFrvrhaisRISHiH%2FhViF7iFpZm5ZclBD5rjqQ4r1O8%2BBDRSB4feMaP2S1Usd0uGrMnVFT8zX7dV7sT2Y1NQ%2Fk5%2FHP%2BgzBQgHMLuH%2FqdSBz%2Fu9wr7oT6Xb0edOUBjPrw55yhZM1R%2FxEJSNwap2f77XRxbJWH%2BFtEuWBC2Gve3MIn9L9loCqk%2Fe0XoGGy%2FuEDvHfEHRCchzaWKH3Hlr5MehOI4WaaPgmbj%2BBeSbcY%2BmDIc1TJ%2BhQmsRf5DoqlqiCuKNQLuX1XS1e3cnfM3%2BonkBImxaqx%2BlTG0HxWAV0Ntsn%2B0%2BeErZleVNI9VIZgIOHDxNkiaG3BucPL1SRuPNtgcNgGFpvYmFqTqPrR%2FgYDPobzlxy%2FcMVEALYB%2FogbH4gy%2FZP7xczjXypgdvtTawokxTUopmKyXVCwvA0coEQzWLW1EQfMsWPNZcA2p58oaelGA3FBlgkZ2iUnx4qukKEZQ7vKFie8VKFBelfNSp6aXcezYbnDbeFHYOAvLeXPriaZ5qBQzNADUtyj%2FhTsY%2BbvmnwCAGT%2F%2BMYeyd9VFWPEbR8cj%2FrRDEEWc0wdd5BOoHzix%2Bz2Uif9512VwHn9%2Bp3KXAnrK1O%2FQ6HRB7YS9BPyYQvW9ZtpvvKBwOIjf3fx7aqwYqfa7VUzMGv3zkvVA8Bp2JHG2GoQxnVa62ymP3SGshxS4l86ParjFNvepN16O1VaPAidFvqHRXAP14tHMkeC8VTFuqp5cKAY4UdXpPXukOvXPySbdFSPaaAqfIv7%2BckjxFsUPS4cauOx2jif2fQU2maxErLnwrZ10natNklynu5sUn9RSuRDld9v4TNTbyPShDdijM%2BzvpJoMyr4GWiFthB0kZZ2lVnPoqV67VQ%2FPiyCUA9zVbrLSAEOKIz1HQ19I0hdH41fBUPL824xYMdIO1AlZJKGre%2FCvUEgXaHgvbe83QNtFw%2BU946tlGVwR9TCCPltakqyKrT%2F8CtCZ6Mi0qfmFYnF8D7zZBaKxbNgTmMjvwAyz%2F0dMsDi97scJLMYV4w%2Fosk6gvoHEeX6LkbXh5W0aTYTznTSfO2RVfgzWpPiks6rVGzLhfwDyFAyH7%2FOHD7qEWGjnX3fTiBnw5%2FHWqHPJh3Kd%2F4EGe1yE3ZGzxo%2BPETGbcLQaQiiSAaQiFsU5UDoWG1%2FfOjd1Lkjg8D%2FNXuS1BkncxI2Hk%2B4xL0Xa1STqWJGieeyB5DOT9cHYUxEpw1g%3D&amp;ans=ywhm</span><br></pre></td></tr></table></figure>
+
+
+
+
+<p>验证码输入正确返回：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;<span class="string">"errorCode"</span>:<span class="string">"0"</span> , <span class="string">"randstr"</span> : <span class="string">"@mDo"</span> , <span class="string">"ticket"</span> : <span class="string">"t026Dii9p2HtKBiYgHwRpwqXFrwWsI3-tta5rc7J3ELr5VgnaORdHXceHsZpmOl6JGRkEQYtUoeJs8KXWym7a0cxuw07929umE9cPo16UNyimo*"</span> , <span class="string">"errMessage"</span>:<span class="string">"OK"</span>&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>verifycode为randstr，pt_verifysession_v1为ticket</p>
+</blockquote>
+<h4 id="第七步：-验证用户名密码是否正确"><a href="#第七步：-验证用户名密码是否正确" class="headerlink" title="第七步： 验证用户名密码是否正确"></a>第七步： 验证用户名密码是否正确</h4><p>请求：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">http://ptlogin2.qq.com/login?u=987654321&amp;verifycode=@mDo&amp;pt_vcode_v1=1&amp;pt_verifysession_v1=t026Dii9p2HtKBiYgHwRpwqXFrwWsI3-tta5rc7J3ELr5VgnaORdHXceHsZpmOl6JGRkEQYtUoeJs8KXWym7a0cxuw07929umE9cPo16UNyimo*&amp;p=A*CEx2PsoaZAYQe7D-5dLmTxdorqI9asO37Wugp2KFHzeEqYpMPh9CHPk7DDzZw5UzD4y1in-ZrSoXLx5kJYe1WGZ7sqhg*ZNJ3DtQ65rXR*I5i*dCAQ-h1fFV*u3AdP8IFAAu*borH*xSYbFZDTQ8TjplD2wan2w8MnDfo3h1AyUL*kpt79FqpCfuXnlaSOyTOzkMceEQczxw5DYzmZDetbMeJMYhoqLhQ0WHxbHUafhOEk1EhBDiqXvfETJvCmSMubGN7W*LIF3JPoYFDOgJmmPWqauGvw7C03ehesfIzeNtm-m5R*QX8HyM4dPp*dc3lRUxF2rMuBPn9EVzaqpg__&amp;pt_randsalt=2&amp;u1=http%3A%2F%2Fwww.qq.com%2Fqq2012%2FloginSuccess.htm&amp;ptredirect=0&amp;h=1&amp;t=1&amp;g=1&amp;from_ui=1&amp;ptlang=2052&amp;action=5-24-1488013134992&amp;js_ver=10197&amp;js_type=1&amp;login_sig=KVSX9JmFKqCXlNi85SLXJnj5DqKPDzAYGwW3X5d3Wcnxd885YPFSeDU7ul15aTQp&amp;pt_uistyle=40&amp;aid=636014201&amp;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>带验证码登录可能存在问题，待修改</p>
+</blockquote>
+<p><a href="http://fuping.site/2017/04/10/QQ登录简单分析，附易语言登录代码/QQLogin.e">易语言实现代码</a></p>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/QQ%E7%99%BB%E5%BD%95/">#QQ登录</a><a href="/tags/%E6%98%93%E8%AF%AD%E8%A8%80/">#易语言</a></p></article></div><footer><div class="paginator"><a href="/2017/04/15/%E6%96%B9%E7%A8%8B%E5%BC%8F%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E4%B9%8BSMB/" class="prev">PREV</a><a href="/2017/04/09/%E5%BE%AE%E4%BF%A1%E8%81%8A%E5%A4%A9%E8%AE%B0%E5%BD%95%E8%AF%BB%E5%8F%96/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2020 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

@@ -1,0 +1,111 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> upload-labs writeup · 浮萍's Blog</title><meta name="description" content="upload-labs writeup - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">upload-labs writeup</h1><div class="post-info">Jun 4, 2018<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/Exploit/" class="post-category">#Exploit</a></div><div class="post-content"><p><a href="https://github.com/c0ny1/upload-labs" target="_blank" rel="noopener">upload-labs</a>是一个总结了大部分PHP上传漏洞的靶场 ，本文主要是记录一下这些常见上传漏洞的绕过方法。当然一种漏洞会有多种绕过的方法，这里暂时列举一些我所知道的解法。有些会有环境限制的，我会在其中备注出来的。</p>
+<a id="more"></a>
+
+<h2 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h2><p>我这里用到的是PHPStudy2016。采用的是Apache+php，其中Apache版本为2.4，php版本按照作者所说的为5.2.17。操作系统为Win10 。然后下载upload-labs并放置在PHPStudy安装目录的WWW目录下。也可以采用作者的<a href="https://github.com/c0ny1/upload-labs/releases" target="_blank" rel="noopener">集成环境</a>。</p>
+<h2 id="题目与解法"><a href="#题目与解法" class="headerlink" title="题目与解法"></a>题目与解法</h2><p>首先需要在upload-labs目录下新建upload目录。</p>
+<p>然后就开始答题了。其中13-16暂时要求的是“保证上传后的图片马中仍然包含完整的<code>一句话</code>或<code>webshell</code>代码 ”，我就暂时以13题为例，其余的暂时先不做。第18题暂未解出，所以暂时先省略。</p>
+<p>其他题的WriteUp如下：</p>
+<h3 id="Pass-01"><a href="#Pass-01" class="headerlink" title="Pass-01"></a>Pass-01</h3><p>在js中判断文件，直接上传拦截后修改为php文件</p>
+<p><img src="upload-labs-writeup%5C01.png" alt="1527750911228"></p>
+<h3 id="Pass-02"><a href="#Pass-02" class="headerlink" title="Pass-02"></a>Pass-02</h3><p><img src="upload-labs-writeup%5C02.png" alt="1527751110894"></p>
+<blockquote>
+<p>注意需要带上<code>Content-Type: image/jpeg</code></p>
+</blockquote>
+<h3 id="Pass-03"><a href="#Pass-03" class="headerlink" title="Pass-03"></a>Pass-03</h3><h4 id="方法1"><a href="#方法1" class="headerlink" title="方法1"></a>方法1</h4><p>首先名字为<code>3.php:jpg</code></p>
+<p><img src="upload-labs-writeup%5C03_01.png" alt="1527752035450"></p>
+<p>会写入一个<code>3.php</code>的空文件</p>
+<p>然后修改名字为<code>3.&lt;&lt;&lt;</code></p>
+<p><img src="upload-labs-writeup%5C03_02.png" alt="1527752164570"></p>
+<p>参考<a href="https://www.waitalone.cn/php-windows-upload.html" target="_blank" rel="noopener">https://www.waitalone.cn/php-windows-upload.html</a></p>
+<h4 id="方法2"><a href="#方法2" class="headerlink" title="方法2"></a>方法2</h4><p>需要在apache httpd.conf进行配置。</p>
+<p><code>AddType application/x-httpd-php .php .phtml</code></p>
+<p>然后上传的文件名可以为<code>3.php.a</code>或者<code>3.phtml</code></p>
+<p><img src="upload-labs-writeup%5C03_03.png" alt="1527832795973"></p>
+<blockquote>
+<p>这个解法是查看到作者给的集成环境中有这样的设置</p>
+</blockquote>
+<h4 id="方法3"><a href="#方法3" class="headerlink" title="方法3"></a>方法3</h4><p><img src="upload-labs-writeup%5C03-04.png" alt="1527836221197"></p>
+<p>首先文件名为<code>3.php.::$DATA</code>会生成一个<code>3.php.</code>文件</p>
+<p>再将文件名修改为<code>3.php&gt;</code></p>
+<p><img src="upload-labs-writeup%5C03-05.png" alt="1527835503648"></p>
+<blockquote>
+<p>第二次的文件名还可以为<code>3.php&lt;</code> 、<code>3.php&gt;</code> 、<code>3.php\</code> 以及<code>3.php&quot;</code></p>
+<p>3.php.文件直接删除不掉，可以在bash命令下删除</p>
+</blockquote>
+<h4 id="方法4"><a href="#方法4" class="headerlink" title="方法4"></a>方法4</h4><p>%aa url解码</p>
+<p><img src="upload-labs-writeup%5C03-06.png" alt="1527839239501"></p>
+<p>其他还有%b3、%b2等。。</p>
+<h3 id="Pass-04"><a href="#Pass-04" class="headerlink" title="Pass-04"></a>Pass-04</h3><p>参考Pass-03的方法1、2、3、4</p>
+<h3 id="Pass-05"><a href="#Pass-05" class="headerlink" title="Pass-05"></a>Pass-05</h3><p>参考Pass-03的方法1、2、3、4</p>
+<p>没有对文件名进行小写转换，所以大小写混合或者大写可以绕过</p>
+<p><img src="upload-labs-writeup%5C05-02.png" alt="1527840876449"></p>
+<h3 id="Pass-06"><a href="#Pass-06" class="headerlink" title="Pass-06"></a>Pass-06</h3><p>参考Pass-03的方法1、2、3、4</p>
+<p>这里没有去除空格，所以用“6.php ”即可绕过</p>
+<p><img src="upload-labs-writeup%5C06-02.png" alt="1528077233962"></p>
+<h3 id="Pass-07"><a href="#Pass-07" class="headerlink" title="Pass-07"></a>Pass-07</h3><p>参考Pass-03的方法1、2、3、4</p>
+<p>没有删除结尾的“.”，所以用“7.php.”可以绕过</p>
+<p><img src="upload-labs-writeup%5C07-01.png" alt="1528077415251"></p>
+<h3 id="Pass-08"><a href="#Pass-08" class="headerlink" title="Pass-08"></a>Pass-08</h3><p>参考Pass-03的方法1、2、3、4</p>
+<p>没有对字符串<code>::$DATA</code>进行操作，所以可以使用<code>8.php::$DATA</code>绕过</p>
+<p><img src="upload-labs-writeup%5C08-01.png" alt="1527841099446"></p>
+<h3 id="Pass-09"><a href="#Pass-09" class="headerlink" title="Pass-09"></a>Pass-09</h3><p>参考Pass-03的方法1、2、3、4</p>
+<h3 id="Pass-10"><a href="#Pass-10" class="headerlink" title="Pass-10"></a>Pass-10</h3><p>关键代码<code>$file_name = str_ireplace($deny_ext,&quot;&quot;, $file_name);</code></p>
+<p>当后缀名中出现黑名单列表中的内容时，就替换为空，所以可以用pphphp这样的后缀绕过。</p>
+<p><img src="upload-labs-writeup%5C10-01.png" alt="1527833585243"></p>
+<h3 id="Pass-11"><a href="#Pass-11" class="headerlink" title="Pass-11"></a>Pass-11</h3><p>%00截断即可</p>
+<p>需关闭magic_quotes_gpc</p>
+<p><img src="upload-labs-writeup%5C11-01.png" alt="1527816997321"></p>
+<blockquote>
+<p>集成环境中有该设置：<code>magic_quotes_gpc = Off</code></p>
+</blockquote>
+<h3 id="Pass-12"><a href="#Pass-12" class="headerlink" title="Pass-12"></a>Pass-12</h3><p>%00截断即可，需要url解码</p>
+<p>需关闭magic_quotes_gpc</p>
+<p><img src="upload-labs-writeup%5C12-01.png" alt="1527817083878"></p>
+<blockquote>
+<p>集成环境中有该设置：<code>magic_quotes_gpc = Off</code></p>
+</blockquote>
+<h3 id="Pass-13"><a href="#Pass-13" class="headerlink" title="Pass-13"></a>Pass-13</h3><p>题目已经更新，要求“保证上传后的图片马中仍然包含完整的<code>一句话</code>或<code>webshell</code>代码 ”</p>
+<p>这里就以png格式图片为例</p>
+<p><code>copy xwz.png/b + 1.txt 1111.png</code></p>
+<p>其中xwz.png为正常的png图片，1.txt内容为<code>&lt;?php echo &quot;pwn&quot;;?&gt;</code></p>
+<p>查看上传后的结果</p>
+<p><img src="upload-labs-writeup%5C13-01.png" alt="1528079960735"></p>
+<p>当然也可以直接用hex工具打开图片，在最后追加php代码。</p>
+<blockquote>
+<p>14-16和该题要求类似，统一按该方法处理。步骤省略。</p>
+</blockquote>
+<h3 id="Pass-17"><a href="#Pass-17" class="headerlink" title="Pass-17"></a>Pass-17</h3><p>参考Pass-03方法1</p>
+<p>文件名为：“17.php:.jpg”,上传成功后会生成一个17.php空文件，将文件名改为“17.&lt;&lt;&lt;”后再次上传</p>
+<p><img src="upload-labs-writeup%5C17-01.png" alt="1528080850165"></p>
+<p><img src="upload-labs-writeup%5C17-02.png" alt="1528080900372"></p>
+<h3 id="Pass-19"><a href="#Pass-19" class="headerlink" title="Pass-19"></a>Pass-19</h3><p>save_name修改为“upload-19.php.”即可</p>
+<p><img src="upload-labs-writeup%5C19-01.png" alt="1528081520987"></p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这里面比较通杀的方法是采用<code>aaa.php:jpg</code> 的方法生成一个<code>aaa.php</code>的空文件，然后使用<code>aaa.&lt;&lt;&lt;</code>再次写入文件内容。可以参考<a href="https://www.waitalone.cn/php-windows-upload.html" target="_blank" rel="noopener">当php邂逅windows通用上传缺陷</a>这篇文章，里面介绍的很详细。</p>
+<p>本文主要用到的绕过方式有：</p>
+<ol>
+<li><p>修改js绕过（或者上传图片格式后抓包修改）</p>
+</li>
+<li><p>利用文件名<code>aaa.php:jpg</code> 的方法生成一个<code>aaa.php</code>的空文件，然后使用<code>aaa.&lt;&lt;&lt;</code>再次写入文件内容</p>
+</li>
+<li><p>使用<code>3.php::$DATA</code> 绕过</p>
+</li>
+<li><p>文件名进行小写绕过</p>
+</li>
+<li><p>“abc.php.” 绕过</p>
+</li>
+<li><p>“abc.pphphp”绕过</p>
+</li>
+<li><p>%00截断绕过</p>
+</li>
+<li><p>URL解码绕过（参考Pass-03)方法4</p>
+</li>
+</ol>
+<p>本文只是给了部分解题的答案，没有过多的描述思路。每道题的解法也不是那么单一固定的。其中Pass-03到Pass-09都可以利用Pass-03的四种方法。</p>
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li><p><a href="https://github.com/c0ny1/upload-labs" target="_blank" rel="noopener">https://github.com/c0ny1/upload-labs</a></p>
+</li>
+<li><p><a href="https://www.waitalone.cn/php-windows-upload.html" target="_blank" rel="noopener">https://www.waitalone.cn/php-windows-upload.html</a></p>
+</li>
+</ul>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/PHP/">#PHP</a></p></article></div><footer><div class="paginator"><a href="/2018/08/16/Automatically-Identify-Chinese-Point-Selection/" class="prev">PREV</a><a href="/2018/05/25/UEditor-SSRF-In-JSP/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2020 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

@@ -1,0 +1,87 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 安卓APP测试之双向证书认证 · 浮萍's Blog</title><meta name="description" content="安卓APP测试之双向证书认证 - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">安卓APP测试之双向证书认证</h1><div class="post-info">Feb 13, 2019<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/Android%E6%8A%80%E6%9C%AF/" class="post-category">#Android技术</a></div><div class="post-content"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>在《<a href="https://fuping.site/2019/01/25/Frida-Hook-SoulAPP/">安卓APP测试之HOOK大法-Frida篇</a>》文章中有一个双向证书认证没详细说明，经过<strong>孔已己</strong>的提示，现在补充一下。</p>
+<a id="more"></a>
+
+<h2 id="0x02-双向证书认证与解决方法"><a href="#0x02-双向证书认证与解决方法" class="headerlink" title="0x02 双向证书认证与解决方法"></a>0x02 双向证书认证与解决方法</h2><p>在对soulApp进行抓包的时候，提示<strong><code>网络错误,请检查网络后重试~</code></strong></p>
+<p><img src="01.png" alt=""></p>
+<p>本来以为直接把这个okhttp的证书hook修改成系统默认的即可，就没有详细说明这一部分，结果有网友问双向证书认证这部分是如何处理的，就详细来说明一下如何处理。这里时由于采用了双向证书认证的缘故，所以抓包返回400错误，直接浏览器访问<a href="https://account.soulapp.cn/" target="_blank" rel="noopener">https://account.soulapp.cn/</a> ，也是不行的</p>
+<p><img src="02.png" alt=""></p>
+<p>提示<code>No required SSL certificate was sent.</code>如果要访问成功，就要带上证书。</p>
+<blockquote>
+<p>关于双向证书认证：客户端有自己的密匙，并持有服务端的证书，服务端给客户端发送数据时，需要将服务端的证书发给客户端验证，验证通过才运行发送数据，同样，客户端请求服务器数据时，也需要将自己的证书发给服务端验证，通过才允许执行请求。详细的内容可以参考<a href="https://blog.csdn.net/enweitech/article/details/53813183。" target="_blank" rel="noopener">https://blog.csdn.net/enweitech/article/details/53813183。</a></p>
+</blockquote>
+<p>我们本地来测试一下，简单介绍一下如何搭建双向证书认证环境。</p>
+<h3 id="1-双向证书认证服务器的搭建"><a href="#1-双向证书认证服务器的搭建" class="headerlink" title="1.双向证书认证服务器的搭建"></a>1.双向证书认证服务器的搭建</h3><p><strong>创建一个证书的步骤：</strong> </p>
+<p><strong>（1）生成系统私钥</strong></p>
+<p><strong>（2）生成待签名证书</strong></p>
+<p><strong>（3）生成x509证书, 用CA私钥进行签名</strong></p>
+<blockquote>
+<p>证书的生成过程略。</p>
+</blockquote>
+<p>以tomcat服务器为例。将生成的服务端证书<code>server.p12</code>和客户端信任证书<code>truststore.jks</code>放入conf目录下。修改tomcat下conf/server.xml文件，去掉https的注释。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;Connector port&#x3D;&quot;8443&quot; protocol&#x3D;&quot;org.apache.coyote.http11.Http11Protocol&quot;</span><br><span class="line">               maxThreads&#x3D;&quot;150&quot; SSLEnabled&#x3D;&quot;true&quot; scheme&#x3D;&quot;https&quot; secure&#x3D;&quot;true&quot;</span><br><span class="line">               clientAuth&#x3D;&quot;false&quot; sslProtocol&#x3D;&quot;TLS&quot; &#x2F;&gt;</span><br></pre></td></tr></table></figure>
+
+<p>修改为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;Connector port&#x3D;&quot;8443&quot; protocol&#x3D;&quot;org.apache.coyote.http11.Http11Protocol&quot;</span><br><span class="line">	truststoreFile&#x3D;&quot;conf&#x2F;truststore.jks&quot; truststorePass&#x3D;&quot;123456&quot; truststoreType&#x3D;&quot;JKS&quot;</span><br><span class="line">    keystoreFile&#x3D;&quot;conf&#x2F;server.p12&quot; keystorePass&#x3D;&quot;123456&quot; keystoreType&#x3D;&quot;PKCS12&quot; </span><br><span class="line">    maxThreads&#x3D;&quot;150&quot; SSLEnabled&#x3D;&quot;true&quot; scheme&#x3D;&quot;https&quot; secure&#x3D;&quot;true&quot;</span><br><span class="line">    clientAuth&#x3D;&quot;false&quot; sslProtocol&#x3D;&quot;TLS&quot; &#x2F;&gt;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>此时<code>clientAuth=&quot;false&quot;</code>，未开启客户端校验。</p>
+</blockquote>
+<p>启动服务器并访问。</p>
+<p><img src="03.png" alt=""></p>
+<p>虽然提示错误但是点继续前往即可访问。</p>
+<p><img src="04.png" alt=""></p>
+<p>设置开启客户端校验，即<code>clientAuth=&quot;true&quot;</code></p>
+<p>然后重启后访问</p>
+<p><img src="05.png" alt=""></p>
+<p>无法正常访问，想要正常访问，浏览器导入证书即可</p>
+<p><img src="06.png" alt=""></p>
+<p>下一步然后输入密码</p>
+<p><img src="07.png" alt=""></p>
+<p>刷新页面，提示选择证书。</p>
+<p><img src="08.png" alt=""></p>
+<p>确定后即可访问。</p>
+<h3 id="2-soulAPP双向认证解决方法"><a href="#2-soulAPP双向认证解决方法" class="headerlink" title="2.soulAPP双向认证解决方法"></a>2.soulAPP双向认证解决方法</h3><p>同理这里soulApp也可以这样做。</p>
+<p>这里列举三种方法来完成客户端的验证。归根结底都是证书的利用。</p>
+<h4 id="a-浏览器导入证书"><a href="#a-浏览器导入证书" class="headerlink" title="a)浏览器导入证书"></a>a)浏览器导入证书</h4><p>利用soulApp中的证书和密码生成浏览器证书。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">openssl pkcs12 -export -inkey client.key -in client.crt -out soulclient.pfx</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>证书的位置位于资源文件assets中。</p>
+</blockquote>
+<p><img src="09.png" alt=""></p>
+<blockquote>
+<p>标记的1处输入的是soul证书的密码，2和3为证书导入浏览器自己设置的密码，这里为123456</p>
+</blockquote>
+<p>然后导入浏览器，重新访问<a href="https://account.soulapp.cn/" target="_blank" rel="noopener">https://account.soulapp.cn/</a></p>
+<p><img src="10.png" alt=""></p>
+<p>选择证书后确定。</p>
+<p><img src="https://i.imgur.com/63SKzUi.png" alt=""></p>
+<p>根据页面显示内容可以发现此时导入证书后可以正常访问。</p>
+<h4 id="b-利用程序完成认证"><a href="#b-利用程序完成认证" class="headerlink" title="b)利用程序完成认证"></a>b)利用程序完成认证</h4><p>利用程序的话，参考<code>cn.soulapp.android.api.e.a()</code>方法，进行证书的操作。</p>
+<p><img src="11.png" alt=""></p>
+<p>精简之后主要代码如下：</p>
+<p><img src="12.png" alt=""></p>
+<p>然后利用httpclient进行http请求。</p>
+<p>当访问不加证书的效果：</p>
+<p><img src="13.png" alt=""></p>
+<p>使用证书的结果：</p>
+<p><img src="14.png" alt=""></p>
+<blockquote>
+<p>由于这是这是之前的数据包，所以已经过期，再次使用需要更换时间戳和签名，但结果成功的。</p>
+</blockquote>
+<h4 id="c-利用抓包工具"><a href="#c-利用抓包工具" class="headerlink" title="c)利用抓包工具"></a>c)利用抓包工具</h4><p>使用抓包工具，这里以burp为例。</p>
+<p>未导入证书抓包结果：</p>
+<p><img src="15.png" alt=""></p>
+<p>提示400错误，我们在burp中导入证书</p>
+<p><img src="16.png" alt=""></p>
+<p>选择证书并输入密码。</p>
+<p><img src="17.png" alt=""></p>
+<p>证书导入成功。</p>
+<p><img src="18.png" alt=""></p>
+<p>再次抓包</p>
+<p><img src="19.png" alt=""></p>
+<p>已经可以正常抓取了。</p>
+<p>当然使用其他方法也是可行的，这里就不再列举了。</p>
+<h3 id="0x03-总结"><a href="#0x03-总结" class="headerlink" title="0x03 总结"></a>0x03 总结</h3><p>本文主要是为了解决APP与服务器之间的双向证书认证问题，没有太多的技巧，主要就是证书的使用。如果服务器采用了双向认证，那么一般在APP中有证书和证书密码的存在，找到之后导入抓包工具即可。</p>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/SoulAPP/">#SoulAPP</a><a href="/tags/%E5%8F%8C%E5%90%91%E8%AF%81%E4%B9%A6/">#双向证书</a></p></article></div><footer><div class="paginator"><a href="/2019/02/21/WinRAR-Extracting-Code-Execution-Validate/" class="prev">PREV</a><a href="/2019/01/28/Xposed-Hook-SoulApp/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2020 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

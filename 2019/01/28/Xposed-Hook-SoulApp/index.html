@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 安卓APP测试之HOOK大法-Xposed篇 · 浮萍's Blog</title><meta name="description" content="安卓APP测试之HOOK大法-Xposed篇 - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">安卓APP测试之HOOK大法-Xposed篇</h1><div class="post-info">Jan 28, 2019<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/Android%E6%8A%80%E6%9C%AF/" class="post-category">#Android技术</a></div><div class="post-content"><h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p><a href="https://fuping.site/2019/01/25/Frida-Hook-SoulAPP/">安卓APP测试之HOOK大法-Frida篇</a>是基于Frida来实现HOOK，对于部分用户来说，一方面手机ROOT会带来一些风险，另一方面虽然愿意承担风险但是手机无法ROOT。这就需要采用另外一种方法–利用Xposed来进行HOOK。安装VirtualXposed之后，并不需要对手机进行ROOT，也可以来运行Xposed模块进行HOOK。</p>
+<a id="more"></a>
+
+<p><a href="https://github.com/android-hacker/VirtualXposed" target="_blank" rel="noopener">VirtualXposed</a>是基于<a href="https://github.com/asLody/VirtualApp" target="_blank" rel="noopener">VirtualApp</a> 和 <a href="https://github.com/tiann/epic" target="_blank" rel="noopener">epic</a> 在<strong>非ROOT</strong>环境下运行Xposed模块的实现（支持5.0~9.0)，就像它的介绍那样，<code>Use Xposed with a simple APP, without needing to root, unlock the bootloader, or flash a system image.</code>可以运行Xposed，不需要root，也不需要BL解锁和刷机。</p>
+<h2 id="0x02-环境准备"><a href="#0x02-环境准备" class="headerlink" title="0x02 环境准备"></a>0x02 环境准备</h2><p>手机还是采用魅族Mx4，关闭ROOT权限。</p>
+<p><img src="01.png" alt=""></p>
+<p><img src="02.png" alt=""></p>
+<p>下载并安装VirtualXposed，下载地址：<a href="https://github.com/android-hacker/VirtualXposed/releases" target="_blank" rel="noopener">https://github.com/android-hacker/VirtualXposed/releases</a></p>
+<p>安装：</p>
+<p><code>adb install VirtualXposed_0.16.1.apk</code></p>
+<p>安装VirtualXposed之后，然后把手机上的APP安装到VirtualXposed上。</p>
+<p><img src="03.png" alt=""></p>
+<blockquote>
+<p>由于VirtualXposed自带Xposed，这里我们只将需要的APP安装上去即可。</p>
+</blockquote>
+<p>开发Xposed模块采用的是Android Studio。</p>
+<p>新建一个APP项目，添加依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">provided &#39;de.robv.android.xposed:api:82&#39;</span><br><span class="line">provided &#39;de.robv.android.xposed:api:82:sources&#39;</span><br></pre></td></tr></table></figure>
+
+<p><img src="04.png" alt=""></p>
+<p>新建一个Main类，并实现<code>IXposedHookLoadPackage</code>接口。</p>
+<p><img src="05.png" alt=""></p>
+<p>在src/main下新建一个<code>Assets Folder</code>。</p>
+<p><img src="06.png" alt=""></p>
+<p>并在其中新建一个名称为<code>xposed_init</code>的文件，内容是实现HOOK的类，这里是<code>com.fuping.soulhook.Main</code>。</p>
+<p>在AndroidManifest.xml中指定模块的名称</p>
+<p><img src="07.png" alt=""></p>
+<p>环境准备好了，下面就是模块的开发和HOOK了。</p>
+<h2 id="0x03-利用Xposed进行HOOK"><a href="#0x03-利用Xposed进行HOOK" class="headerlink" title="0x03 利用Xposed进行HOOK"></a>0x03 利用Xposed进行HOOK</h2><p>由于上篇文章已经分析过了，这里就不进行分析了，打开app会提示<code>SoulApp 暂不支持模拟器，请稍后再试~</code>。我们需要对<code>cn.soulapp.android.utils.j.e()</code>进行HOOK，令其返回为false。</p>
+<p>上面模块的框架已经搭好了，直接写HOOK代码，主要代码如下：</p>
+<p><img src="08.png" alt=""></p>
+<blockquote>
+<p>注意，利用Android Studio进行模块的编写时，需要禁用<code>Instant Run</code>(<code>File -&gt; Settings -&gt; Build, Execution, Deployment -&gt; Instant Run</code>)。</p>
+</blockquote>
+<p>然后打包安装。再利用VirtualXposed将编写的HOOK模块添加到VirtualXposed中。</p>
+<p><img src="09.png" alt=""></p>
+<p>查看安装的app</p>
+<p><img src="10.png" alt=""></p>
+<p>然后在VirtualXposed中打开Xposed Installer，在模块中勾选soulHook。</p>
+<p><img src="11.png" alt=""></p>
+<p>重启VirtualXposed。</p>
+<blockquote>
+<p>Xposed模块每次修改都需要重启手机，在VirtualXposed中时，只需重启VirtualXposed即可，而且速度极快。</p>
+</blockquote>
+<p>在VirtualXposed中打开soulapp，并查看logcat输出内容。</p>
+<p><img src="12.png" alt=""></p>
+<p>APP可以正常进入，说明HOOK成功。</p>
+<p>剩下的也比较简单了，例如查看<code>com.gongjiao.rr.tools.f.b</code>参数。</p>
+<p>主要代码：</p>
+<p><img src="13.png" alt=""></p>
+<p>运行输入手机号查看Log信息：</p>
+<p><img src="14.png" alt=""></p>
+<p>也是毫无问题可以获取到参数的内容的。</p>
+<p>获取到参数内容后，根据上篇文章的算法的分析，就可以自己构造进行加密了。</p>
+<p>例如利用Python来实现，可以批量探测用户是否注册。</p>
+<p><img src="15.png" alt=""></p>
+<h2 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h2><p>本来Frida和Xposed是作为一篇文章的，但是由于篇幅问题分成了两篇。这两篇文章主要通过两种方式来进行HOOK，主要是为了说明HOOK的好处，没有说是为了对比哪个好哪个不好的。不过通过测试，如果安装了VirtualXposed，Xposed应该还是略胜一筹吧。第一点无需ROOT即可运行，第二点是解决了需要重启手机的麻烦（利用VirtualXposed可以秒重启），第三点就是携带方便了。不过各有各的好处，根据自己的习惯选择。也可以先用Frida进行HOOK，毕竟测试比较方便，然后最后移植到Xposed上。</p>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/%E5%AE%89%E5%8D%93Hook/">#安卓Hook</a><a href="/tags/SoulAPP/">#SoulAPP</a><a href="/tags/Xposed/">#Xposed</a></p></article></div><footer><div class="paginator"><a href="/2019/02/13/SoulAPP-SSL-Bypass/" class="prev">PREV</a><a href="/2019/01/25/Frida-Hook-SoulAPP/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2020 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
