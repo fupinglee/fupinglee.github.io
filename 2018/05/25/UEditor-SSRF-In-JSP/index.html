@@ -2,14 +2,14 @@
 </head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">UEditor SSRF漏洞(JSP版本)分析与复现</h1><div class="post-info">May 25, 2018<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/Exploit/" class="post-category">#Exploit</a></div><div class="post-content"><p>前些时间测试的时候遇到了一个系统采用了UEditor编辑器，版本为1.4.3。已知该编辑器v1.4.3版本（jsp)存在SSRF漏洞，虽然是Bool型的SSRF，除了可以进行内网探测外，也可以根据web应用指纹信息，之后进行进一步的测试。</p>
 <a id="more"></a>
 
-<h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>查看官方的<a href="http://ueditor.baidu.com/website/changelog.html" target="_blank" rel="noopener">更新日志</a>可以发现UEditor编辑器在版本1.4.3.1修复了SSRF漏洞。<img src="UEditor-SSRF-In-JSP%5C01.png" alt="01"></p>
+<h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p>查看官方的<a href="http://ueditor.baidu.com/website/changelog.html" target="_blank" rel="noopener">更新日志</a>可以发现UEditor编辑器在版本1.4.3.1修复了SSRF漏洞。<img src="01.png" alt="01"></p>
 <p>那版本1.4.3应该存在SSRF漏洞，本着能搜索就不动手的原则搜了一下，发现<code>wooyun-2015-0133125</code>中提到过这类的漏洞。但我这里是jsp版本的，里面提到jsp版本不一样，只好去分析一下漏洞产生的位置。</p>
 <h2 id="0x02-漏洞分析"><a href="#0x02-漏洞分析" class="headerlink" title="0x02 漏洞分析"></a>0x02 漏洞分析</h2><p>那我们需要查看版本1.4.3与1.4.3.1有什么不同，从而找到存在问题的地方。该项目的代码托管在Github上，地址为：<a href="https://github.com/fex-team/ueditor/" target="_blank" rel="noopener">https://github.com/fex-team/ueditor/</a> 。</p>
 <p>查看版本1.4.3.1下的<a href="https://github.com/fex-team/ueditor/tree/v1.4.3.1/jsp" target="_blank" rel="noopener">jsp代码</a>.</p>
-<p><img src="UEditor-SSRF-In-JSP%5C02.png" alt="02"></p>
+<p><img src="02.png" alt="02"></p>
 <p>可以发现在该版本有一次commit，commitId 为<code>a1820147cfc3fbe2960a7d99f8dfbe338c02f0b6</code>。根据字面意思应该是增加了修复SSRF的代码。</p>
 <p>下载下来后对比一下v1.4.3.1和v1.4.3代码有什么不同(这里仅对比jsp下的代码)。</p>
-<p><img src="UEditor-SSRF-In-JSP%5C03.png" alt="03"></p>
+<p><img src="03.png" alt="03"></p>
 <p>发现在v1.4.3.1中修改了jsp/src/com/baidu/ueditor/hunter/ImageHunter.java的<code>validHost</code>方法。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">boolean</span> <span class="title">validHost</span> <span class="params">( String hostname )</span> </span>&#123;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		InetAddress ip = InetAddress.getByName(hostname);<span class="comment">//根据主机名获取ip</span></span><br><span class="line">		</span><br><span class="line">		<span class="keyword">if</span> (ip.isSiteLocalAddress()) &#123;<span class="comment">//是否为地区本地地址</span></span><br><span class="line">			<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">catch</span> (UnknownHostException e) &#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="keyword">false</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> !filters.contains( hostname );</span><br><span class="line">	</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
@@ -21,7 +21,7 @@
 <p>IPv4的地址本地地址分为三段：10.0.0.0 ~ 10.255.255.255、172.16.0.0 ~ 172.31.255.255、192.168.0.0 ~ 192.168.255.255。</p>
 </blockquote>
 <p>搜索后发现在<code>captureRemoteData</code>中调用了<code>validHost</code>方法。</p>
-<p> <img src="UEditor-SSRF-In-JSP%5C04.png" alt="05"></p>
+<p> <img src="04.png" alt="05"></p>
 <p>根据代码可以分析：首先使用<code>validHost</code>对url进行判断，如果不合法，就提示“被阻止的远程主机”；当满足条件后会使用<code>validContentState</code>方法查看返回的状态是否为200，若不为200，则提示“远程连接出错”；进而对后缀、文件大小进行判断，都符合之后才进行图片的保存。如果url无法访问，则提示“抓取远程图片失败”。</p>
 <p>所以可以根据返回的内容，来推断该url对应的主机是否可以访问。由于在版本v1.4.3中没有对请求的主机进行验证，从而造成了SSRF漏洞。</p>
 <p>继续查看在<code>capture</code>方法中调用了<code>captureRemoteData</code>。</p>
@@ -32,23 +32,23 @@
 
 <p>当调用<code>capture</code>需要满足条件为<code>actionCode</code>为<code>ActionMap.CATCH_IMAGE</code>，在<code>ActionMap</code>中value为<code>ActionMap.CATCH_IMAGE对应的</code>key为<code>catchimage。所以</code>当<code>actionType</code>值为<code>catchimage</code>，即<code>action</code>参数对应为<code>catchimage</code>时，才可能触发SSRF漏洞。下面对漏洞进行验证。</p>
 <h2 id="0x03-漏洞验证"><a href="#0x03-漏洞验证" class="headerlink" title="0x03 漏洞验证"></a>0x03 漏洞验证</h2><p>这里用的是v1.4.3 jsp版本，下载ueditor1_4_3-utf8-jsp.zip，之后进行配置（可以参考<a href="http://fex.baidu.com/ueditor/#server-jsp）。" target="_blank" rel="noopener">http://fex.baidu.com/ueditor/#server-jsp）。</a></p>
-<p><img src="UEditor-SSRF-In-JSP%5C05.png" alt="04"></p>
+<p><img src="05.png" alt="04"></p>
 <p>功能实现的入口文件是jsp/controller.jsp。由上述分析可知需要满足<code>action</code>参数为<code>catchimage</code>。</p>
 <p>在<code>case ActionMap.CATCH_IMAGE</code>中下断点，然后进行调试。</p>
 <p>访问链接<a href="http://localhost:8088/jsp/controller.jsp?action=catchimage" target="_blank" rel="noopener">http://localhost:8088/jsp/controller.jsp?action=catchimage</a></p>
-<p><img src="UEditor-SSRF-In-JSP%5C06.png" alt="1527146004264"></p>
+<p><img src="06.png" alt="1527146004264"></p>
 <p>继续运行发现list为空，然后就抛出了异常。</p>
 <p>再次运行，查看list数据从何而来。</p>
-<p><img src="UEditor-SSRF-In-JSP%5C07.png" alt="1527146184688"></p>
+<p><img src="07.png" alt="1527146184688"></p>
 <p>可以看出list的数据从浏览器source[]参数而来。这里source[]需要后缀为图片格式，具体可以查看config.js中的<code>catcherAllowFiles</code>。</p>
 <p>已知192.168.135.133开启了tomcat服务，且端口为8080。我们这里访问一张不存在的图片，例如用UUID生成一张图片的名称。</p>
 <p>构造请求链接：<a href="http://localhost:8088/jsp/controller.jsp?action=catchimage&amp;source[]=http://192.168.135.133:8080/0f3927bc-5f26-11e8-9c2d-fa7ae01bbebc.png" target="_blank" rel="noopener">http://localhost:8088/jsp/controller.jsp?action=catchimage&amp;source[]=http://192.168.135.133:8080/0f3927bc-5f26-11e8-9c2d-fa7ae01bbebc.png</a></p>
-<p><img src="UEditor-SSRF-In-JSP%5C08.png" alt="1527151024365"></p>
+<p><img src="08.png" alt="1527151024365"></p>
 <p>当进入<code>validHost</code>方法时，由于被访问的主机地址不在过滤的范围，所以返回true。</p>
 <blockquote>
 <p>这里可以发现，仅仅对<code>127.0.0.1</code>、<code>localhost</code>和<code>img.baidu.com</code>进行了限制，当ip为本地地址时并没有限制，从而可以进行内网探测。</p>
 </blockquote>
-<p><img src="UEditor-SSRF-In-JSP%5C09.png" alt="1527151160299"></p>
+<p><img src="09.png" alt="1527151160299"></p>
 <p>而该图片由于不存在，所以状态码为404，到此抓取图片过程结束，并返回结果。</p>
 <p>这里可以根据页面返回的结果不同，来判断该地址对应的主机端口是否开放。可以总结为以下几点：</p>
 <ol>
@@ -67,7 +67,7 @@
 <p>由于返回的结果为<code>{&quot;state&quot;: &quot;SUCCESS&quot;, list: [{&quot;state&quot;: &quot;...&quot;} ]}</code>并不能直接用json来解析，需要将list替换为”list”后才可以作为json来解析。当然也可以直接使用burp来测试。</p>
 </blockquote>
 <p>在实际测试中的测试结果如下：</p>
-<p><img src="UEditor-SSRF-In-JSP%5C10.png" alt="1527148655823"></p>
+<p><img src="10.png" alt="1527148655823"></p>
 <h2 id="0x05-综合利用"><a href="#0x05-综合利用" class="headerlink" title="0x05 综合利用"></a>0x05 综合利用</h2><p>对于这样的Bool型SSRF ，页面仅返回了状态，而没有更多别的信息，要想进一步利用，可以根据如下的思路：</p>
 <p><code>内网探测-&gt;应用识别-&gt;攻击Payload-&gt;查看结果</code></p>
 <h3 id="内网探测"><a href="#内网探测" class="headerlink" title="内网探测"></a>内网探测</h3><p>首先进行内网探测，查看内网开放的主机和端口。这里以本地为例。</p>
@@ -77,22 +77,22 @@
 
 <p>发现端口80 和 8080 开放，然后进行应用的识别。</p>
 <h3 id="应用识别"><a href="#应用识别" class="headerlink" title="应用识别"></a>应用识别</h3><p>80端口由于没有可以识别的特征，所以未识别到应用的类型，而8080端口可以识别出来为tomcat服务器。</p>
-<p><img src="UEditor-SSRF-In-JSP%5C11.png" alt="1527175485827"></p>
+<p><img src="11.png" alt="1527175485827"></p>
 <p>然后尝试查看是否存在Struts2漏洞。</p>
 <h3 id="攻击Payload"><a href="#攻击Payload" class="headerlink" title="攻击Payload"></a>攻击Payload</h3><p>由于在抓取远程图片时，会请求给出的URL地址，所以可以利用Struts2漏洞在内网服务器（这里为192.168.135.155）上写入一个后缀为图片格式（如png、jpg)的文件（因为只能抓取图片格式的文件，所以这里写入了图片后缀的文件），然后利用Ueditor抓取图片的功能，将写入的图片文件抓取到ueditor服务器中，然后访问图片查看攻击结果。</p>
 <p>首先写文件，这里利用Struts2漏洞在内网服务器web项目下写入一个名字为b5e592d2-ab5b-476d-865a-8299a0625490.png的文件，内容为<code>Struts2_Test.png</code>。</p>
-<p><img src="UEditor-SSRF-In-JSP%5C12.png" alt="1527181406261"></p>
+<p><img src="12.png" alt="1527181406261"></p>
 <blockquote>
 <p>这里之所以写入内容为<code>Struts2_Test.png</code>，是由于在抓取图片时会判断图片链接的后缀是否为图片格式。当然还有其他的写法，例如</p>
 <p><a href="http://192.168.135.135:8080/Struts2_bugs-0.0.1-SNAPSHOT/test.action%3Fredirect%253A%24%257B%2523req%253d%2523context.get(&#39;com.opensymphony.xwork2.dispatcher.HttpServletRequest&#39;),%2523b%253D%2523req.getRealPath(%2522/%2522)%252B&#39;b5e592d2-ab5b-476d-865a-8299a0625490.png&#39;,%2523res%253d%2523context.get(&#39;com.opensymphony.xwork2.dispatcher.HttpServletResponse&#39;),%2523res.getWriter().print(%2522oko%2522),%2523res.getWriter().print(%2522kok%2522),%2523res.getWriter().flush(),%2523res.getWriter().close(),new%2520java.io.BufferedWriter(new%2520java.io.FileWriter(%2523b)).append(%2523req.getParameter(%2522shell%2522)).close()%257D%26shell%3DStruts2_Test&amp;aaa.png也可以写入。" target="_blank" rel="noopener">http://192.168.135.135:8080/Struts2_bugs-0.0.1-SNAPSHOT/test.action%3Fredirect%253A%24%257B%2523req%253d%2523context.get(&#39;com.opensymphony.xwork2.dispatcher.HttpServletRequest&#39;),%2523b%253D%2523req.getRealPath(%2522/%2522)%252B&#39;b5e592d2-ab5b-476d-865a-8299a0625490.png&#39;,%2523res%253d%2523context.get(&#39;com.opensymphony.xwork2.dispatcher.HttpServletResponse&#39;),%2523res.getWriter().print(%2522oko%2522),%2523res.getWriter().print(%2522kok%2522),%2523res.getWriter().flush(),%2523res.getWriter().close(),new%2520java.io.BufferedWriter(new%2520java.io.FileWriter(%2523b)).append(%2523req.getParameter(%2522shell%2522)).close()%257D%26shell%3DStruts2_Test&amp;aaa.png也可以写入。</a></p>
 </blockquote>
 <p>然后再次利用Ueditor抓取远程图片的功能将写入内网服务器的“图片文件”抓取下来，查看其内容。</p>
 <p>这里需要抓取的图片地址为：<a href="http://192.168.135.155:8080/Struts2_bugs-0.0.1-SNAPSHOT/b5e592d2-ab5b-476d-865a-8299a0625490.png" target="_blank" rel="noopener">http://192.168.135.155:8080/Struts2_bugs-0.0.1-SNAPSHOT/b5e592d2-ab5b-476d-865a-8299a0625490.png</a></p>
-<p><img src="UEditor-SSRF-In-JSP%5C13.png" alt="1527181487872"></p>
+<p><img src="13.png" alt="1527181487872"></p>
 <p>由上图可以看出，最后抓取的文件保存地址为：<code>/ueditor/jsp/upload/image/20180525/1527181480175039672.png</code></p>
 <h3 id="查看结果"><a href="#查看结果" class="headerlink" title="查看结果"></a>查看结果</h3><p>然后访问<a href="http://localhost:8088/ueditor/jsp/upload/image/20180525/1527181480175039672.png" target="_blank" rel="noopener">http://localhost:8088/ueditor/jsp/upload/image/20180525/1527181480175039672.png</a></p>
 <p>查看是否攻击成功。</p>
-<p><img src="UEditor-SSRF-In-JSP%5C14.png" alt="1527181545625"></p>
+<p><img src="14.png" alt="1527181545625"></p>
 <p>表明攻击成功。</p>
 <h2 id="0x06-总结"><a href="#0x06-总结" class="headerlink" title="0x06 总结"></a>0x06 总结</h2><p>由于UEditor在v1.4.3之前没有加入对内部IP的限制，所以在使用抓取图片的功能时，造成SSRF漏洞。可以进行内网服务器的探测。然后根据内网服务器的特征（如<code>/jmx-console/images/logo.gif</code>, <code>/tomcat.png）</code>，判断其使用的组件，并猜测可能存在的漏洞，然后进行进一步的渗透。</p>
 </div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/Ueditor/">#Ueditor</a><a href="/tags/SSRF/">#SSRF</a></p></article></div><footer><div class="paginator"><a href="/2018/06/04/upload-labs-writeup/" class="prev">上一篇</a><a href="/2018/02/08/Free-PhpJiaMi-Decrypt/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2020 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

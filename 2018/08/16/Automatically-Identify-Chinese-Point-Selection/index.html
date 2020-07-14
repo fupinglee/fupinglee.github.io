@@ -7,22 +7,22 @@
 
 <p>运行后生成这样两张图片。</p>
 <p>ap_XXXXX.png</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5Cap-01.png" alt="1534127745391"></p>
+<p><img src="ap-01.png" alt="1534127745391"></p>
 <p>mp_XXXXX.png</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5Cmp-01.png" alt="1534127785857"></p>
+<p><img src="mp-01.png" alt="1534127785857"></p>
 <p>ap_XXXXX.png是说明需要点击的文字，mp_XXXXX.png是需要点击的图片。</p>
 <h2 id="0x02-验证码识别"><a href="#0x02-验证码识别" class="headerlink" title="0x02  验证码识别"></a>0x02  验证码识别</h2><p>对于这种简单的点选验证码，可以有两种很容易的识别方式（机器学习算麻烦的，这里就不列出了。嗯，对，我也不会）。一种是opencv的图像模板匹配，另外一种是OCR识别。</p>
 <h3 id="1-opencv的图像模板匹配"><a href="#1-opencv的图像模板匹配" class="headerlink" title="1. opencv的图像模板匹配"></a>1. opencv的图像模板匹配</h3><p>第一种方式，使用opencv的图像模板匹配。模板匹配是一种在较大图像中搜索和查找模板图像位置的方法，opencv2和opencv3中提供了一个专门用于模板匹配的函数matchTemplate()。它是在输入图像上滑动模板图像（如在2D卷积中），并比较模板图像下的输入图像的模板和补丁。在OpenCV中实现了六种比较方法（这里用到的是<code>cv2.TM_CCOEFF_NORMED</code>），它返回一个灰度图像，其中每个像素表示该像素的邻域与模板匹配的程度。</p>
 <p>获得结果后，可以使用cv.minMaxLoc（）函数查找最大/最小值的位置。将其作为矩形的左上角，并将（w，h）作为矩形的宽度和高度，那个矩形就是模板区域。 。</p>
 <p>我们进行使用模板匹配来识别这种验证码时，首先先将“模板”找出来，这里我们需要匹配的是“猎”、“户”、“室”这三个字。将这三个字所在的图片进行截取，然后使用matchTemplate()函数在mp中进行匹配。</p>
 <p>首先截取第一个字“猎”。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534141199627.png" alt="1534141199627"></p>
+<p><img src="1534141199627.png" alt="1534141199627"></p>
 <p>截取之后，就可以在mp中进行匹配。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534319979597.png" alt="1534319979597"></p>
+<p><img src="1534319979597.png" alt="1534319979597"></p>
 <p>这里得到了最大和最小位置。我们使用最大位置，然后将最大值作为阈值。获取模板的尺寸，然后在mp中用矩形（红色区域）画出匹配的区域。如下所示。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534142377712.png" alt="1534142377712"></p>
+<p><img src="1534142377712.png" alt="1534142377712"></p>
 <p>同理，用黄色和蓝色矩形将“户”、“室”所在的区域画出来。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534142664129.png" alt="1534142664129"></p>
+<p><img src="1534142664129.png" alt="1534142664129"></p>
 <p>点选时发送所选区域中间的坐标即可，这里就不再给出实例了。</p>
 <p>这种方法虽然简单，但是对于字体不一的就不能很正确的标记出来。</p>
 <p>修改生成图片的代码，将mp中的文字的字体设置为随机。</p>
@@ -30,20 +30,20 @@
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">switch</span> ($type) &#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="number">0</span>:<span class="comment">//mp 文字随机大小</span></span><br><span class="line">        $fontSize = rand(<span class="number">20</span>,<span class="number">30</span>) * <span class="number">0.75</span>;</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">     <span class="keyword">case</span> <span class="number">1</span>:<span class="comment">//ap 文字固定</span></span><br><span class="line">        $fontSize = <span class="number">20</span> * <span class="number">0.75</span>;</span><br><span class="line">        <span class="keyword">break</span>; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>ap生成的结果还是和之前一样，mp的图片如下：</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534406354140.png" alt="1534406354140"></p>
+<p><img src="1534406354140.png" alt="1534406354140"></p>
 <p>使用同样的代码来匹配。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534406412351.png" alt="1534406412351"></p>
+<p><img src="1534406412351.png" alt="1534406412351"></p>
 <p>此时匹配的结果就有些惨不忍睹了。所以就换另外一种识别方式-ocr识别。</p>
 <h3 id="2-OCR识别"><a href="#2-OCR识别" class="headerlink" title="2. OCR识别"></a>2. OCR识别</h3><p>这里采用的是腾讯云的<a href="https://cloud.tencent.com/document/product/866/17600" target="_blank" rel="noopener">OCR-通用印刷体识别</a>。</p>
 <p>参考文档。输入mp图片，返回的是json。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534407226287.png" alt="1534407226287"></p>
+<p><img src="1534407226287.png" alt="1534407226287"></p>
 <p>查看json内容，发现包含了图片中的文字、位置和大小等。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534407260832.png" alt="1534407260832"></p>
+<p><img src="1534407260832.png" alt="1534407260832"></p>
 <p>同理ap中内容也可以获取。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534407371139.png" alt="1534407371139"></p>
+<p><img src="1534407371139.png" alt="1534407371139"></p>
 <p>此时匹配的时候直接就是匹配文字了。首先获取ap中后三个文字，然后与mp中返回的内容匹配，获取其位置和大小，然后再画矩形即可。</p>
 <p>由于比较简单，这里直接贴结果。</p>
-<p><img src="Automatically-Identify-Chinese-Point-Selection%5C1534408948730.png" alt="1534408948730"></p>
+<p><img src="1534408948730.png" alt="1534408948730"></p>
 <p>匹配相当完美。</p>
 <h2 id="0x03-总结"><a href="#0x03-总结" class="headerlink" title="0x03  总结"></a>0x03  总结</h2><p>本文用了两种方法来自动识别汉字点选验证码，第一种采用的是opencv的模板匹配，这种方法虽然也可以匹配到，但这种方法缺点就是对于字体形状差异较大的验证码识别率较低。而第二种方法就比较快捷方便了，而且识别度高，比较推荐第二种方法。</p>
 <p>当然这两种方法对于简单、“正规”的验证码可以，遇到复杂的、“扭曲的”验证码就不行了。这时候就要用到机器学习了，而本文只是简单的“识别”，将机器学习用到这里，就有些大材小用了。</p>
