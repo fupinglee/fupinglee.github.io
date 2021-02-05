@@ -1,0 +1,147 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 当快捷指令遇上智能门锁 · 浮萍's Blog</title><meta name="description" content="当快捷指令遇上智能门锁 - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">当快捷指令遇上智能门锁</h1><div class="post-info">Feb 3, 2021<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/IOS%E9%80%86%E5%90%91/" class="post-category">#IOS逆向</a></div><div class="post-content"><h3 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h3><p>前段时间朋友小区换了一个智能门禁系统，户主通过一个APP进行管理，可以远程进行开锁操作。刚好这段时间在使用IOS的快捷指令操作，于是想做一个一键开门的快捷指令，直接通过快捷指令来完成开门的操作。</p>
+<a id="more"></a>
+
+<h3 id="0x02-逆向分析"><a href="#0x02-逆向分析" class="headerlink" title="0x02 逆向分析"></a>0x02 逆向分析</h3><p>首先打开APP进行抓包，发现参数中有一个加密的sign值。</p>
+<p><img src="01.png" alt="抓包"></p>
+<p>sign值与其他参数都有关系，修改其他参数会提示<code>签名验证失败</code>，而且时间久了该数据包不可用，提示<code>时间不正确，请调整时间</code>。</p>
+<p>于是接下来对APP进行逆向，分析sign值是如何生成的。APP是从APPStore上下载的，首先第一步先进行砸壳。</p>
+<p>数据线连接越狱的手机，打开app，执行<code>frida-ps -Ua</code>,查看Identifier</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">frida-ps -Ua</span><br><span class="line"> PID  Name    Identifier</span><br><span class="line">----  ------  --------------------</span><br><span class="line">1823  xx生活  com.xx.xxlife</span><br><span class="line">1808  微信    com.tencent.xin</span><br><span class="line">1190  邮件    com.apple.mobilemail</span><br></pre></td></tr></table></figure>
+
+<p>使用frida-ios-dump砸壳</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">iproxy 2222 22</span><br><span class="line"><span class="built_in">cd</span> frida-ios-dump //在dump.py中配置好账号信息</span><br><span class="line">python3 dump.py com.xx.xxlife//砸壳</span><br></pre></td></tr></table></figure>
+
+<p>解压得到的ipa文件，使用IDA打开Mac-O文件，在<code>Strings window</code>搜索<code>appUser/login</code></p>
+<p><img src="02.png" alt="搜索字符串"></p>
+<p>找到后查找引用</p>
+<p><img src="03.png" alt="查找引用"></p>
+<p>继续查找</p>
+<p><img src="04.png" alt="继续查找引用"></p>
+<p>发现在<code>+[LoginViewModel login:password:success:failure:]</code>方法中调用了。</p>
+<p><img src="05.png" alt="login方法"></p>
+<p>双击进入<code>-[RequestManager POST_URLString:parameters:showIndicatior:success:failure:]</code>方法，</p>
+<p><img src="06.png" alt="POST_URLString方法"></p>
+<p>在该方法中调用了<code>-[RequestManager RSAWithDic:]</code>方法，根据方法名可以猜出该方法是对参数进行了RSA加密。</p>
+<p>打开<code>-[RequestManager RSAWithDic:]</code>方法</p>
+<p><img src="07.png" alt="RSA加密方法"></p>
+<p>发现参数sign是由其他参数进行RSA加密获得的。查看加密的参数格式的话可以通过<code>frida-trace</code>进行hook查看。</p>
+<p>可以对<code>-[RequestManager convertToString:]</code>方法或者<code>+[RSAUtil encryptString:publicKey:]</code>方法进行hook。</p>
+<p>查看<code>-[RequestManager convertToString:]</code>方法的参数与返回值，执行</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida-trace -U -f com.xx.xxlife -m <span class="string">"-[RequestManager convertToString:]"</span></span><br></pre></td></tr></table></figure>
+
+
+
+<p><img src="08.png" alt="追踪convertToString方法"></p>
+<p> Ctrl-C 停止运行，修改convertToString_.js</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  onEnter(log, args, state) &#123;</span><br><span class="line">    log(<span class="string">`-[RequestManager convertToString:<span class="subst">$&#123;args[<span class="number">2</span>]&#125;</span>]`</span>);</span><br><span class="line">    log(ObjC.Object(args[<span class="number">2</span>]));</span><br><span class="line">  &#125;,</span><br><span class="line">  onLeave(log, retval, state) &#123;</span><br><span class="line">    log(ObjC.Object(retval));</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>再次运行，可以看到参数与返回值</p>
+<p><img src="09.png" alt="重新追踪convertToString方法"></p>
+<p>查看<code>+[RSAUtil encryptString:publicKey:]</code>方法的参数与返回值，执行：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">frida-trace -U -f com.xx.xxlife -m <span class="string">"+[RSAUtil encryptString:publicKey:]"</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="10.png" alt="追踪RSA加密"></p>
+<p>由上面的hook可以看到加密的参数格式以及RSA的public key，接下来进行验证一下。</p>
+<p>这里有一个问题，当使用该public key进行加密时，当加密的数据长度大于117时，会报错。</p>
+<p><img src="11.png" alt="RSA加密出错"></p>
+<p>解决的方法是对加密的数据根据长度117进行分割，使用rsa加密后拼接，最后返回拼接后的数据。</p>
+<p><img src="12.png" alt="解决RSA加密出错"></p>
+<p>修改后可以成功登录，接下来是一键开门的操作。</p>
+<p>当使用一键开门的功能时提示<code>该小区未开启一键开门功能</code></p>
+<img src="13.png" alt="APP一键开门" style="zoom:50%;" />
+
+<blockquote>
+<p>之前是可以使用该功能的，可能由于有业主频繁的开门，物业怕影响正常的使用，后来该功能就不可用了。</p>
+</blockquote>
+<p>根据关键字定位到<code>sub_1000B5978</code>函数</p>
+<p><img src="14.png" alt="sub_1000B5978函数"></p>
+<p>发现是否开启一键开门功能是根据<code>isClickOpen</code>来判断的，当该值不为2时可以使用该功能。在操作APP的时候可以发现返回值中有<code>isClickOpen</code>，通过拦截数据包修改该值为非2的值，如修改为1。</p>
+<p><img src="15.png" alt="修改isClickOpen"></p>
+<p>再次使用一键开门功能可以正常使用。该功能发送的请求：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">POST /xxxxApi/userCommunity/IsOpenDoor HTTP/<span class="number">1.1</span></span><br><span class="line">Host: xxxxapp.xxxxxxx.com</span><br><span class="line">Content-Type: application/x-www-form-urlencoded</span><br><span class="line">Connection: close</span><br><span class="line">Accept: *<span class="comment">/*</span></span><br><span class="line"><span class="comment">User-Agent: PerfectLife/3.01.0 (iPhone; iOS 12.4.1; Scale/2.00)</span></span><br><span class="line"><span class="comment">Accept-Language: zh-Hans-CN;q=1</span></span><br><span class="line"><span class="comment">Content-Length: 545</span></span><br><span class="line"><span class="comment">Accept-Encoding: gzip, deflate</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">accessToken=84379_2eb78c1f6249447a9922039f35fc1fd7&amp;applicationType=2&amp;deviceType=2&amp;houseId=xxxxx&amp;sign=ZkZMPY2OHqCWlW4s%2BXfKFs3pmMfMbO95nGZVex/j7ci2jIakkS8J8wAnq%2BcjRygDI/vsuxPgz/SNRHRXlkzoGcqyglE483PDMbVzYBdtnLtrWFmEl/APAepcgT/Vsap7kr5vhjyf73HsAMFRwd0jKLnhX/Qy04l3FIMlvEs9mW1t7FGEkfRTuCpqz8cz%2B8Db4u8h8HOvyYS1SQiKNene0gdGztNxkFGayf1hPjPOWbSCpdQ9NbkPJ/4vSrGO%2B5HfB8umHvFYeamtByHdwiQsnfzMKcFuw4fGfG6nU35xBOsS1hY%2BWyeMh6/%2BPkXW%2BcyqWjT%2BssTp5F7IZhVibF/zcA%3D%3D&amp;terminalCode=865xxxx&amp;timestamp=1611820323000&amp;version=3.01.0&amp;versionCode=3010</span></span><br></pre></td></tr></table></figure>
+
+<p>其中参数<code>houseId</code>是户主的房屋id，是固定值，与登录的用户有关。可以通过接口<code>appUserHouse/getHouseAndFocusList</code>获取。</p>
+<p>参数<code>terminalCode</code>是小区门的编码，该值可能会变化，可以通过接口<code>door/list</code>获取。</p>
+<p>返回的内容</p>
+<p><img src="16.png" alt="一键开门返回包内容"></p>
+<p>然后就可以利用代码实现一键开门的操作</p>
+<p><img src="17.png" alt="使用代码一键开门"></p>
+<blockquote>
+<p>为了不影响正常使用，这里仅获取houseId与terminalCode，不进行开门操作。</p>
+</blockquote>
+<p>接下来就是快捷指令的编写，实现一键控制。</p>
+<h3 id="0x03-快捷指令编写"><a href="#0x03-快捷指令编写" class="headerlink" title="0x03 快捷指令编写"></a>0x03 快捷指令编写</h3><p>如果结合其他APP或者借助其他平台的话很容易就可以编写快捷指令，如可以使用<code>Pythonista</code>(需付费下载)，复制上面的python脚本，直接通过快捷指令调用，也可以通过快捷指令登录SSH运行脚本(需要有服务器)。</p>
+<img src="18.png" alt="快捷指令运行SSH脚本" style="zoom:50%;" />
+
+<p>但对于普通用户来说这种操作不易实现（需要一定的成本），这里采取了一种稍微繁琐的方法，但都尽量采用快捷指令来实现（或者借助免费的应用来实现）。</p>
+<p>以登录过程为例，进行快捷指令的编写。</p>
+<p>登录过程所需的参数：</p>
+<p><img src="canshu.png" alt="参数"></p>
+<table>
+<thead>
+<tr>
+<th align="center">参数名称</th>
+<th align="center">说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">accessToken</td>
+<td align="center">登录时为空</td>
+</tr>
+<tr>
+<td align="center">applicationType</td>
+<td align="center">当前环境下固定值2</td>
+</tr>
+<tr>
+<td align="center">deviceType</td>
+<td align="center">当前环境下固定值2</td>
+</tr>
+<tr>
+<td align="center">password</td>
+<td align="center">密码</td>
+</tr>
+<tr>
+<td align="center">phone</td>
+<td align="center">手机号</td>
+</tr>
+<tr>
+<td align="center">sign</td>
+<td align="center">对其他参数进行RSA加密获取</td>
+</tr>
+<tr>
+<td align="center">timestamp</td>
+<td align="center">当前时间的时间戳</td>
+</tr>
+<tr>
+<td align="center">version</td>
+<td align="center">当前版本3.01.0</td>
+</tr>
+<tr>
+<td align="center">versionCode</td>
+<td align="center">当前版本3010</td>
+</tr>
+</tbody></table>
+<p>其中时间戳和RSA加密的sign值需要去获取，获取时间戳可以通过快捷指令来实现。</p>
+<img src="19.png" alt="获取时间戳快捷指令" style="zoom:50%;" />
+
+
+
+<p>RSA加密的话，本来可以借助在线平台来实现，但是由于使用该APP的Public key进行加密时，待加密字符串长度大于117时会报错。</p>
+<p><img src="20.png" alt="在线RSA加密出错"></p>
+<p>使用截取字符串的话快捷指令没有截取文本，只有一个根据条件拆分字符，所以这里打算借助其他APP通过执行JavaScript脚本来实现。这里采用的APP是JSBOX，虽然该APP有很多功能，但是都需要高级版才可以使用。不过免费版可以通过快捷指令来执行JavaScript脚本。</p>
+<p>JS实现RSA加密可以使用<a href="http://travistidwell.com/jsencrypt/" target="_blank" rel="noopener">jsencrypt</a> ，主要代码：</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/**省略jsencrypt代码**/</span></span><br><span class="line"><span class="keyword">var</span> PUBLIC_KEY = <span class="string">'MIGfMA0GCSqGSI......7nNQIDAQAB'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> encrypt = <span class="keyword">new</span> JSEncrypt();</span><br><span class="line">encrypt.setPublicKey(<span class="string">'-----BEGIN PUBLIC KEY-----'</span> + PUBLIC_KEY + <span class="string">'-----END PUBLIC KEY-----'</span>);</span><br><span class="line"><span class="keyword">var</span> str = <span class="string">'待加密字符串'</span>;</span><br><span class="line"><span class="keyword">var</span> divide =  <span class="built_in">parseInt</span>(str.length / <span class="number">117</span>);</span><br><span class="line"><span class="keyword">if</span> (divide &gt; <span class="number">0</span>)&#123;divide=divide;&#125; <span class="keyword">else</span> divide=divide + <span class="number">1</span>;</span><br><span class="line"><span class="keyword">var</span> line = divide ;</span><br><span class="line"><span class="keyword">if</span>(str.length % <span class="number">117</span> != <span class="number">0</span>)&#123;</span><br><span class="line">    line = divide + <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> encrypted = <span class="string">''</span> ;</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">var</span> i = <span class="number">0</span>;i&lt;line ;i++)&#123;</span><br><span class="line">    encrypted += b64tohex(encrypt.encrypt(str.substring(i*<span class="number">117</span>,(i+<span class="number">1</span>)*<span class="number">117</span>)));</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> result = hex2b64(encrypted);</span><br><span class="line"></span><br><span class="line">result;</span><br></pre></td></tr></table></figure>
+
+<p>RSA加密的快捷指令</p>
+<p><img src="21.png" alt="RSA加密快捷指令"></p>
+<p>这样借助JSBOX运行JavaScript来实现RSA加密就完成了，剩下的就好做了。</p>
+<p>一个快捷指令可以看作是程序里的一个函数，可以在其他快捷指令中来调用。使用快捷指令的的登录过程如下：</p>
+<p><img src="22.png" alt="登录快捷指令"></p>
+<p>登录成功返回accessToken，然后在其他操作中需要使用该token。其他的操作都类似，先在快捷指令中调用登录，然后请求相关的api即可。如开门的快捷指令如下：</p>
+<img src="23.png" alt="开门快捷指令" style="zoom:50%;" />
+
+<p>使用的话可以直接点击<code>开东门</code>的快捷指令，或者使用语音<code>嘿Siri，开东⻔</code>来开启小区入口门。开启其他大门类似，修改对应的terminalCode即可。</p>
+<p>给别人使用的话也很简单，通过快捷指令<a href="https://www.icloud.com/shortcuts/b7cf16f2de72470ab165f80c23efeb5a" target="_blank" rel="noopener"><code>Backup Shortcuts To iCloud</code></a>将所需的快捷指令共享给别人，然后下载JSBOX即可使用。</p>
+<h3 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h3><p>本文通过快捷指令实现了一个”智能开门”指令，快捷指令实现起来比较简单，但是功能有限制，有些功能需要借助一下其他的APP或者平台才能实现，本文为了大众化才采用了比较繁琐的方法来实现，如果是自己使用的话当然是怎么方便怎么来。</p>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/IOS%E9%80%86%E5%90%91/">#IOS逆向</a><a href="/tags/%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4/">#快捷指令</a></p></article></div><footer><div class="paginator"><a href="/2020/12/16/IOS-APP-tomatodo-Cracked/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2021 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
