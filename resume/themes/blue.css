@@ -1,0 +1,196 @@
+* {
+  font-family: 'pingfang-sc' !important;
+}
+.rs-view .left {
+  flex: auto;
+  text-align: left;
+}
+.rs-view .right {
+  flex: auto;
+  text-align: right;
+}
+.rs-view a {
+  color: #d4d4d4;
+  text-decoration: none;
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+  -webkit-transition: color 0.3s;
+  transition: color 0.3s;
+  -webkit-text-decoration-skip: objects;
+}
+.rs-view img {
+  max-width: 400px;
+}
+.rs-view code {
+  padding: 3px 6px;
+  display: inline-block;
+  color: #333;
+  border-radius: 4px;
+  margin: 0 2px 0px;
+  background-color: rgba(27, 31, 35, 0.05);
+  word-break: break-all;
+  font-size: 13px;
+}
+.rs-view h1 {
+  font-weight: 900;
+}
+.rs-view h2 {
+  font-weight: 700;
+}
+.rs-view h3 {
+  font-weight: 600;
+}
+.rs-view h4,
+.rs-view h5 {
+  position: relative;
+  line-height: 20px;
+  overflow: hidden;
+  margin-left: 50px;
+  margin-right: 50px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.rs-view .h2_block + .h2_block {
+  padding-top: 10px;
+}
+.rs-view .h3_block + .h3_block {
+  padding-top: 0px;
+}
+.rs-view ul {
+  overflow: hidden;
+}
+.rs-view ul li {
+  list-style: square inside;
+}
+.rs-view li ul li {
+  padding-left: 1px;
+  list-style: circle inside;
+}
+.rs-view ol {
+  overflow: hidden;
+  margin: 0 50px;
+}
+.rs-view ol li {
+  list-style: decimal inside;
+}
+.rs-view ol ul li {
+  padding-left: 1px;
+  list-style: circle inside;
+}
+.break-line {
+  display: block;
+  width: 100%;
+  height: 5px;
+}
+.rs-view {
+  width: 100%;
+  background: #fff;
+  padding: 20px 0px;
+}
+.rs-view .header {
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+  color: var(--bg);
+  padding: 0;
+  margin-bottom: 40px;
+}
+.rs-view .block {
+  margin-top: 10px;
+}
+.rs-view .block::before {
+  display: block;
+  content: "";
+  height: 0;
+  clear: both;
+}
+.rs-view .block::after {
+  display: block;
+  content: "";
+  height: 0;
+  clear: both;
+}
+.rs-view .title {
+  display: flex;
+  margin-top: 10px;
+  margin-left: 50px;
+  margin-right: 50px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.rs-view .lr-container {
+  padding: 10px 0 20px;
+  display: flex;
+}
+.rs-view p {
+  display: block;
+  line-height: 18px;
+  font-size: 14px;
+  color: #747474;
+  margin-bottom: 0px;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+.rs-view h1 {
+  font-size: 30px;
+  margin-bottom: 12px;
+  margin: 0 50px;
+}
+.rs-view h2 {
+  position: relative;
+  font-size: 20px;
+  color: var(--bg);
+  border-bottom: 1px solid var(--bg);
+  margin-left: 50px;
+  margin-right: 50px;
+}
+.rs-view h3 {
+  font-size: 14px;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+.rs-view ul {
+  margin: 0 50px;
+}
+.rs-view li {
+  font-size: 13px;
+  margin-top: 8px;
+  color: #747474;
+}
+.rs-view li ul {
+  margin: 0 50px;
+}
+.rs-view .icon {
+  fill: #747474;
+}
+.rs-view a {
+  color: #747474;
+  text-decoration: none;
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+  -webkit-transition: color 0.3s;
+  transition: color 0.3s;
+  -webkit-text-decoration-skip: objects;
+}
+.rs-view a:hover {
+  color: #616161;
+}
+.rs-view a:active {
+  color: #616161;
+}
+.rs-view a:active,
+.rs-view a:hover {
+  text-decoration: none;
+  outline: 0;
+}
+.rs-view a:focus {
+  text-decoration: none;
+  outline: 0;
+}
+.rs-view a[disabled] {
+  color: rgba(255, 255, 255, 0.25);
+  cursor: not-allowed;
+  pointer-events: none;
+}

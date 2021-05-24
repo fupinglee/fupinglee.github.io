@@ -1,0 +1,239 @@
+* {
+  font-family: 'pingfang-sc' !important;
+}
+.rs-view .left {
+  flex: auto;
+  text-align: left;
+}
+.rs-view .right {
+  flex: auto;
+  text-align: right;
+}
+.rs-view a {
+  color: #d4d4d4;
+  text-decoration: none;
+  background-color: transparent;
+  outline: none;
+  cursor: pointer;
+  -webkit-transition: color 0.3s;
+  transition: color 0.3s;
+  -webkit-text-decoration-skip: objects;
+}
+.rs-view img {
+  max-width: 400px;
+}
+.rs-view code {
+  padding: 3px 6px;
+  display: inline-block;
+  color: #333;
+  border-radius: 4px;
+  margin: 0 2px 0px;
+  background-color: rgba(27, 31, 35, 0.05);
+  word-break: break-all;
+  font-size: 13px;
+}
+.rs-view h1 {
+  font-weight: 900;
+}
+.rs-view h2 {
+  font-weight: 700;
+}
+.rs-view h3 {
+  font-weight: 600;
+}
+.rs-view h4,
+.rs-view h5 {
+  position: relative;
+  line-height: 20px;
+  overflow: hidden;
+  margin-left: 50px;
+  margin-right: 50px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.rs-view .h2_block + .h2_block {
+  padding-top: 10px;
+}
+.rs-view .h3_block + .h3_block {
+  padding-top: 0px;
+}
+.rs-view ul {
+  overflow: hidden;
+}
+.rs-view ul li {
+  list-style: square inside;
+}
+.rs-view li ul li {
+  padding-left: 1px;
+  list-style: circle inside;
+}
+.rs-view ol {
+  overflow: hidden;
+  margin: 0 50px;
+}
+.rs-view ol li {
+  list-style: decimal inside;
+}
+.rs-view ol ul li {
+  padding-left: 1px;
+  list-style: circle inside;
+}
+.break-line {
+  display: block;
+  width: 100%;
+  height: 5px;
+}
+.rs-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  -webkit-text-size-adjust: none;
+}
+.rs-view h1 {
+  border-bottom: 1px solid #ddd;
+  color: #fff;
+}
+.rs-view .h1_block {
+  margin-top: 0;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  font-size: 0;
+  -webkit-text-size-adjust: none;
+  background: var(--bg);
+}
+.rs-view .h1_block a {
+  color: #fff;
+}
+.rs-view .h1_block .h2_block:nth-of-type(1) {
+  margin-top: 20px;
+}
+.rs-view .lr-container {
+  padding: 10px 0 20px;
+  display: flex;
+}
+.rs-view .h2_block,
+.rs-view .h3_block,
+.rs-view .h4_block,
+.rs-view .h5_block {
+  color: #000;
+  background: #fff;
+}
+.rs-view .h2_block a,
+.rs-view .h3_block a,
+.rs-view .h4_block a,
+.rs-view .h5_block a {
+  color: #9a9a9a;
+}
+.rs-view .block::before {
+  display: block;
+  content: "";
+  height: 0;
+  clear: both;
+}
+.rs-view .title {
+  margin-top: 10px;
+  margin-left: 50px;
+  margin-right: 50px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+.rs-view .right::after {
+  display: block;
+  content: "";
+  height: 0;
+  clear: both;
+}
+.rs-view p {
+  margin-bottom: 0px;
+  margin-left: 50px;
+  margin-right: 50px;
+  font-size: 14px;
+}
+.rs-view h1 {
+  font-size: 28px;
+  margin: 0;
+  padding: 20px 0;
+  margin: 0 50px;
+}
+.rs-view .h2_block {
+  position: relative;
+  border: 0px;
+  margin-top: -1px;
+  padding: 20px 0 10px;
+}
+.rs-view .h3_block {
+  padding: 10px 0;
+}
+.rs-view h2 {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 120px - 30% * 2);
+  min-width: 100px;
+  margin: 0px auto 5px;
+  padding: 4px 10px;
+  border-radius: 32px;
+  font-size: 16px;
+  text-align: center;
+  background-color: #eee;
+}
+.rs-view h2::after {
+  content: "";
+  width: calc(100% + 10px);
+  position: absolute;
+  top: 50%;
+  height: 0;
+  left: 120%;
+  border-top: 1px solid #ededed;
+}
+.rs-view h2::before {
+  content: "";
+  width: calc(100% + 10px);
+  position: absolute;
+  top: 50%;
+  height: 0;
+  left: -120%;
+  border-top: 1px solid #ededed;
+}
+.rs-view h3 {
+  position: relative;
+  line-height: 1.8;
+  overflow: hidden;
+  margin-left: 50px;
+  margin-right: 50px;
+  font-size: 15px;
+}
+.rs-view ul {
+  margin: 0 50px;
+}
+.rs-view li {
+  font-size: 13px;
+  margin-top: 8px;
+}
+.rs-view a {
+  color: #9a9a9a;
+}
+.rs-view a:hover {
+  color: #d1d0d0;
+}
+.rs-view a:active {
+  color: #d1d0d0;
+}
+.rs-view a:active,
+.rs-view a:hover {
+  text-decoration: none;
+  outline: 0;
+}
+.rs-view a:focus {
+  text-decoration: none;
+  outline: 0;
+}
+.rs-view a[disabled] {
+  color: rgba(255, 255, 255, 0.25);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.rs-view .icon {
+  fill: #fff;
+}
