@@ -375,9 +375,9 @@
       
         <tags>
             
-            <tag> SSRF </tag>
-            
             <tag> Ueditor </tag>
+            
+            <tag> SSRF </tag>
             
         </tags>
       
@@ -626,9 +626,9 @@
       
         <tags>
             
-            <tag> WebLogic漏洞 </tag>
-            
             <tag> SSRF </tag>
+            
+            <tag> WebLogic漏洞 </tag>
             
             <tag> WebLogic反序列化 </tag>
             
