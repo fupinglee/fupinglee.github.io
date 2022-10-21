@@ -22,24 +22,24 @@
 </blockquote>
 <p>安装后执行<code>appium-doctor --ios</code>指令，可以查看与iOS相关配置是否完整。</p>
 <p>如果有哪一项是打叉的，则根据安装说明进行安装就可以了。</p>
-<p><img src="02.png" alt></p>
+<p><img src="02.png" alt=""></p>
 <p>下图是全部配置都成功的情况。</p>
-<p><img src="01.png" alt></p>
+<p><img src="01.png" alt=""></p>
 <p>由于需要在真机下进行测试所以还需要配置<a href="https://github.com/facebookarchive/WebDriverAgent" target="_blank" rel="noopener">WebDriverAgent</a>。</p>
 <h3 id="配置WebDriverAgent"><a href="#配置WebDriverAgent" class="headerlink" title="配置WebDriverAgent"></a>配置WebDriverAgent</h3><p>下载<a href="https://github.com/facebookarchive/WebDriverAgent" target="_blank" rel="noopener">WebDriverAgent</a>。</p>
 <p>进入到WebDriverAgent目录，然后执行<code>./Scripts/bootstrap.sh</code>下载安装依赖库。</p>
-<p><img src="03.png" alt></p>
+<p><img src="03.png" alt=""></p>
 <p>双击<code>WebDriverAgent.xcodeproj</code>使用xcode打开WebDriverAgent项目</p>
 <p>配置<code>WebDriverAgentLib</code>、<code>WebDriverAgentRunner</code>以及<code>IntegrationApp</code>的开发者信息</p>
-<p><img src="04.png" alt></p>
+<p><img src="04.png" alt=""></p>
 <p>发现有错误，接下来修改<code>WebDriverAgentRunner</code>和<code>IntegrationApp</code>的<code>Bundle identifier</code>。</p>
 <p><img src="05.png" alt="修改WebDriverAgentRunner"></p>
 <p><img src="06.png" alt="修改IntegrationApp"></p>
 <p>修改后发现无报错信息。然后数据线连接真机，进行安装。</p>
 <p>发现编译失败，将 <code>assign</code> 改成 <code>unsafe_unretained</code> ，然后重新使用<code>command + u</code>进行编译安装测试。</p>
-<p><img src="07.png" alt></p>
+<p><img src="07.png" alt=""></p>
 <p>然后访问<code>http://手机IP:8100</code>。如<a href="http://172.20.10.1:8100/status" target="_blank" rel="noopener">http://172.20.10.1:8100/status</a> 。</p>
-<p><img src="08.png" alt></p>
+<p><img src="08.png" alt=""></p>
 <blockquote>
 <p>需要手机与电脑处于同一网络下，我这里为了测试，电脑连接的是手机的热点。</p>
 </blockquote>
@@ -48,7 +48,7 @@
 <p>直接替换即可，或者直接修改Appium中的WebDriverAgent，效果一样。</p>
 <p>接下来就是自动化脚本的编写。</p>
 <h3 id="自动化脚本编写"><a href="#自动化脚本编写" class="headerlink" title="自动化脚本编写"></a>自动化脚本编写</h3><p>可以通过使用Appium应用程序查看IOS元素特征。启动Appium，左上角菜单栏选择<code>APPium</code>-<code>New Session Window...</code>(或者快捷键<code>command+N</code>)。</p>
-<p><img src="09.png" alt></p>
+<p><img src="09.png" alt=""></p>
 <p>填写对应的启动参数。</p>
 <p>一些必要的参数：</p>
 <ul>
@@ -57,7 +57,7 @@
 <li>bundleId需测试程序的bundle id,可以通过<code>ios-deploy --list_bundle_id</code>查询</li>
 </ul>
 <p>配置完成后，点击<code>Start Session</code>，手机会自动打开<code>哔哩哔哩</code>APP。</p>
-<p><img src="10.png" alt></p>
+<p><img src="10.png" alt=""></p>
 <p>可以利用xpath获取元素并进行输入、点击等一系列操作。接下来就可以通过使用Python脚本来进行自动化测试了。</p>
 <p>需要安装appium的python依赖库。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install Appium-Python-Client</span><br></pre></td></tr></table></figure>

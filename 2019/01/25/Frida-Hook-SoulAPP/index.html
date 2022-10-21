@@ -3,9 +3,9 @@
 <a id="more"></a>
 
 <p>例如：</p>
-<p><img src="01.png" alt></p>
+<p><img src="01.png" alt=""></p>
 <p>还有的有时间校验，当过去某一时间段后，该数据包就失效了。</p>
-<p><img src="02.png" alt></p>
+<p><img src="02.png" alt=""></p>
 <p>因此如果想要去重放或者修改数据包进行FUZZ的话，就要弄清楚其中的加密sign值的算法。</p>
 <p>本文以某app老版本为例(仅为技术研究)，主要目的是利用Frida进行HOOK进而去获取其api-sign的加密算法。</p>
 <h2 id="0x02-环境准备"><a href="#0x02-环境准备" class="headerlink" title="0x02 环境准备"></a>0x02 环境准备</h2><p>这里手机采用魅族X4，刷了CM13.0，开启ROOT权限。</p>
@@ -29,40 +29,40 @@
 
 <p>环境准备好了，就开始对APP进行测试。</p>
 <h2 id="0x03-利用Frida进行HOOK"><a href="#0x03-利用Frida进行HOOK" class="headerlink" title="0x03 利用Frida进行HOOK"></a>0x03 利用Frida进行HOOK</h2><p>安装后打开APP。</p>
-<p><img src="03.png" alt></p>
+<p><img src="03.png" alt=""></p>
 <p>发现APP闪退，并提示<code>SoulApp 暂不支持模拟器，请稍后再试~</code>。</p>
 <p>用jadx打开apk文件，搜索关键字<code>模拟器</code>。</p>
-<p><img src="04.png" alt></p>
+<p><img src="04.png" alt=""></p>
 <p>只有一处，我们点进去。</p>
-<p><img src="05.png" alt></p>
+<p><img src="05.png" alt=""></p>
 <p>其中有个判断，如果<code>cn.soulapp.android.utils.j.e()</code>为true，则提示不支持模拟器，并退出程序。点进这个方法查看。</p>
-<p><img src="06.png" alt></p>
+<p><img src="06.png" alt=""></p>
 <p>其中有多个判断，如果一个为true，则返回true，最简单有效的方法就是hook，直接令其返回为false。使用Frida进行hook，代码如下：</p>
-<p><img src="07.png" alt></p>
+<p><img src="07.png" alt=""></p>
 <p>运行后，发现再次打开app，可以顺利进入了。</p>
-<p><img src="08.png" alt></p>
+<p><img src="08.png" alt=""></p>
 <p>输入手机号，点击确定。</p>
-<p><img src="09.png" alt></p>
+<p><img src="09.png" alt=""></p>
 <p>提示<code>网络错误</code>，这是因为使用了代理，所以报错，但是有数据包的。可以暂时先不管这里。我们目的是获取sign值的加密算法。这里是获取api-sign的加密算法。</p>
 <p>数据包内容</p>
-<p><img src="10.png" alt></p>
+<p><img src="10.png" alt=""></p>
 <p>数据包中有<code>api-sign</code>，所以直接利用jadx搜索<code>api-sign</code>。</p>
-<p><img src="11.png" alt></p>
+<p><img src="11.png" alt=""></p>
 <p>发现在cn.soulapp.android.api.b.b.b()中有调用，进入查看。</p>
-<p><img src="12.png" alt></p>
+<p><img src="12.png" alt=""></p>
 <p>api-sign值的获取调用了<code>cn.soulapp.android.api.b.c.a</code>方法。</p>
-<p><img src="13.png" alt></p>
+<p><img src="13.png" alt=""></p>
 <p>这里是创建了一个stringBuilder，经过拼接后，调用com.gongjiao.rr.tools.f.b进行sha1加密，并转换为大写。我们需要知道cn.soulapp.android.api.b.c.a三个参数的值是什么。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aVar.b(<span class="string">"api-sign"</span>, c.a(aaVar, replaceAll, currentTimeMillis));</span><br></pre></td></tr></table></figure>
 
 <p>根据代码可以推测，第一个参数<code>aaVar</code>是类<code>okhttp3.Request</code>的实例化；</p>
 <p>第二个参数<code>replaceAll</code>是获取的UUID去除中间的<code>&quot;-&quot;</code>；</p>
 <p>第三个参数是当前时间戳减去<code>cn.soulapp.android.api.a.a()</code>。这个值是从<code>soul_share.xml</code>中读取<code>ApiConstants_timeDiff</code>的值，查看<code>soul_share.xml</code>发现内容为空。</p>
-<p><img src="14.png" alt></p>
+<p><img src="14.png" alt=""></p>
 <p>所以第三个参数为当前的时间戳。</p>
 <p>查看<code>cn.soulapp.android.api.b.c.a</code>方法，前半部分是对<code>aaVar</code>进行操作，大概是获取请求的路径，然后对参数进行拼接。</p>
 <p>看后半部分的代码：</p>
-<p><img src="15.png" alt></p>
+<p><img src="15.png" alt=""></p>
 <p>这里第71行中的<code>UTDevice.getUtdid(SoulApp.b())</code>为设备号，即数据包里面的<code>device-id</code>；</p>
 <p>第72行的a.j为固定值，这里为10000003；</p>
 <p>第73行这个值需要获取，可以用hook获取；</p>
@@ -72,38 +72,38 @@
 <p>然后第80行调用com.gongjiao.rr.tools.f.b对stringBuilder进行加密，并转换为大写。</p>
 <p>可以通过hook的方法直接获取<code>cn.soulapp.android.api.b.c.a</code>和<code>com.gongjiao.rr.tools.f.b</code>的参数。</p>
 <p>主要代码：</p>
-<p><img src="16.png" alt></p>
+<p><img src="16.png" alt=""></p>
 <blockquote>
 <p>由于<code>cn.soulapp.android.api.b.c</code>中有多个a方法，所以这里用了重载，指明参数类型来确定是哪个方法。</p>
 </blockquote>
 <p>运行效果</p>
-<p><img src="17.png" alt></p>
+<p><img src="17.png" alt=""></p>
 <p>知道了加密算法以及参数，就可以自己实现加密获取api-sign了，如下所示：</p>
-<p><img src="18.png" alt></p>
+<p><img src="18.png" alt=""></p>
 <p>api-sign值可以获取了，我们试一下能否利用。由上面知道代理抓包时数据包返回400，经过查看代码是可以解决这个问题的。这里不详细说明。</p>
-<p><img src="19.png" alt></p>
+<p><img src="19.png" alt=""></p>
 <p>发现该方法获取api-sign是可行的。</p>
 <h2 id="0x04-其他问题"><a href="#0x04-其他问题" class="headerlink" title="0x04 其他问题"></a>0x04 其他问题</h2><h3 id="1-不进行hook获取参数的内容或者查看调用堆栈的方法"><a href="#1-不进行hook获取参数的内容或者查看调用堆栈的方法" class="headerlink" title="1.不进行hook获取参数的内容或者查看调用堆栈的方法"></a>1.不进行hook获取参数的内容或者查看调用堆栈的方法</h3><p>可以通过动态调试的方法进行查看。</p>
 <p>首先将apk反编译为smali文件，然后IDEA安装smalidea插件。下载地址：<a href="https://bitbucket.org/JesusFreke/smali/downloads/" target="_blank" rel="noopener">https://bitbucket.org/JesusFreke/smali/downloads/</a></p>
 <p>反编译的命令如下：</p>
 <p><code>java -jar baksmali-2.2.2.jar d 106_3ce8a91b116f3ca28175affa3d12083f.apk -o SoulApp3010/src</code></p>
 <p>然后导入到idea中</p>
-<p><img src="20.png" alt></p>
+<p><img src="20.png" alt=""></p>
 <p>然后在需要查看的地方下断点。</p>
 <p>例如在<code>cn.soulapp.android.api.b.c.a</code>下断点</p>
-<p><img src="21.png" alt></p>
+<p><img src="21.png" alt=""></p>
 <p>打开Run/Debug Configurations，添加一个远程调试，端口8700</p>
 <p>运行app，然后在Android Device Monitor中选中</p>
-<p><img src="22.png" alt></p>
+<p><img src="22.png" alt=""></p>
 <p>打开调试按钮，点击手机上的确定，进入调试。</p>
-<p><img src="23.png" alt></p>
+<p><img src="23.png" alt=""></p>
 <h3 id="2-加密的算法在so文件中"><a href="#2-加密的算法在so文件中" class="headerlink" title="2.加密的算法在so文件中"></a>2.加密的算法在so文件中</h3><p>简单的方法就是获取调用so中方法的参数，然后自己写一个app，调用其so文件。</p>
 <p>如果有判断的话，可以修改so文件达到可以调用的目的。</p>
-<p><img src="24.png" alt></p>
+<p><img src="24.png" alt=""></p>
 <p>如上所示，该so文件有判断，如果isInMyAPP为false，则会退出，返回null。</p>
 <p>我们可以修改<code>CMP R0,#0</code>为<code>CMP R0,#1</code>来绕过该限制。</p>
 <p>修改后</p>
-<p><img src="25.png" alt></p>
+<p><img src="25.png" alt=""></p>
 <p>更深入的就是对so文件进行分析，找到其中的加密算法。</p>
 <h2 id="0x05-总结"><a href="#0x05-总结" class="headerlink" title="0x05 总结"></a>0x05 总结</h2><p>Frida不仅可以用于hook java层，也可以进行native层的hook。利用Frida进行hook时，要求需要使用已ROOT的手机，对于手机无法ROOT的，安装<a href="https://github.com/android-hacker/VirtualXposed" target="_blank" rel="noopener">VirtualXposed</a>后使用Xposed框架也可以进行HOOK。这里就不说明了，有兴趣的可以去试一试。</p>
 </div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/%E5%AE%89%E5%8D%93Hook/">#安卓Hook</a><a href="/tags/Frida/">#Frida</a><a href="/tags/SoulAPP/">#SoulAPP</a></p></article></div><footer><div class="paginator"><a href="/2019/01/28/Xposed-Hook-SoulApp/" class="prev">上一篇</a><a href="/2018/11/19/QQ-Lock-bypass/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

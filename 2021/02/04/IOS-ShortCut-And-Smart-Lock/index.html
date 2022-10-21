@@ -49,7 +49,7 @@
 <p><img src="12.png" alt="解决RSA加密出错"></p>
 <p>修改后可以成功登录，接下来是一键开门的操作。</p>
 <p>当使用一键开门的功能时提示<code>该小区未开启一键开门功能</code></p>
-<img src="13.png" alt="APP一键开门" style="zoom:50%;">
+<img src="13.png" alt="APP一键开门" style="zoom:50%;" />
 
 <blockquote>
 <p>之前是可以使用该功能的，可能由于有业主频繁的开门，物业怕影响正常的使用，后来该功能就不可用了。</p>
@@ -72,7 +72,7 @@
 </blockquote>
 <p>接下来就是快捷指令的编写，实现一键控制。</p>
 <h3 id="0x03-快捷指令编写"><a href="#0x03-快捷指令编写" class="headerlink" title="0x03 快捷指令编写"></a>0x03 快捷指令编写</h3><p>如果结合其他APP或者借助其他平台的话很容易就可以编写快捷指令，如可以使用<code>Pythonista</code>(需付费下载)，复制上面的python脚本，直接通过快捷指令调用，也可以通过快捷指令登录SSH运行脚本(需要有服务器)。</p>
-<img src="18.png" alt="快捷指令运行SSH脚本" style="zoom:50%;">
+<img src="18.png" alt="快捷指令运行SSH脚本" style="zoom:50%;" />
 
 <p>但对于普通用户来说这种操作不易实现（需要一定的成本），这里采取了一种稍微繁琐的方法，但都尽量采用快捷指令来实现（或者借助免费的应用来实现）。</p>
 <p>以登录过程为例，进行快捷指令的编写。</p>
@@ -123,7 +123,7 @@
 </tr>
 </tbody></table>
 <p>其中时间戳和RSA加密的sign值需要去获取，获取时间戳可以通过快捷指令来实现。</p>
-<img src="19.png" alt="获取时间戳快捷指令" style="zoom:50%;">
+<img src="19.png" alt="获取时间戳快捷指令" style="zoom:50%;" />
 
 
 
@@ -139,7 +139,7 @@
 <p>一个快捷指令可以看作是程序里的一个函数，可以在其他快捷指令中来调用。使用快捷指令的的登录过程如下：</p>
 <p><img src="22.png" alt="登录快捷指令"></p>
 <p>登录成功返回accessToken，然后在其他操作中需要使用该token。其他的操作都类似，先在快捷指令中调用登录，然后请求相关的api即可。如开门的快捷指令如下：</p>
-<img src="23.png" alt="开门快捷指令" style="zoom:50%;">
+<img src="23.png" alt="开门快捷指令" style="zoom:50%;" />
 
 <p>使用的话可以直接点击<code>开东门</code>的快捷指令，或者使用语音<code>嘿Siri，开东⻔</code>来开启小区入口门。开启其他大门类似，修改对应的terminalCode即可。</p>
 <p>给别人使用的话也很简单，通过快捷指令<a href="https://www.icloud.com/shortcuts/b7cf16f2de72470ab165f80c23efeb5a" target="_blank" rel="noopener"><code>Backup Shortcuts To iCloud</code></a>将所需的快捷指令共享给别人，然后下载JSBOX即可使用。</p>
