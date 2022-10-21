@@ -49,7 +49,7 @@
 <p><img src="12.png" alt="解决RSA加密出错"></p>
 <p>修改后可以成功登录，接下来是一键开门的操作。</p>
 <p>当使用一键开门的功能时提示<code>该小区未开启一键开门功能</code></p>
-<img src="13.png" alt="APP一键开门" style="zoom:50%;" />
+<img src="13.png" alt="APP一键开门" style="zoom:50%;">
 
 <blockquote>
 <p>之前是可以使用该功能的，可能由于有业主频繁的开门，物业怕影响正常的使用，后来该功能就不可用了。</p>
@@ -72,7 +72,7 @@
 </blockquote>
 <p>接下来就是快捷指令的编写，实现一键控制。</p>
 <h3 id="0x03-快捷指令编写"><a href="#0x03-快捷指令编写" class="headerlink" title="0x03 快捷指令编写"></a>0x03 快捷指令编写</h3><p>如果结合其他APP或者借助其他平台的话很容易就可以编写快捷指令，如可以使用<code>Pythonista</code>(需付费下载)，复制上面的python脚本，直接通过快捷指令调用，也可以通过快捷指令登录SSH运行脚本(需要有服务器)。</p>
-<img src="18.png" alt="快捷指令运行SSH脚本" style="zoom:50%;" />
+<img src="18.png" alt="快捷指令运行SSH脚本" style="zoom:50%;">
 
 <p>但对于普通用户来说这种操作不易实现（需要一定的成本），这里采取了一种稍微繁琐的方法，但都尽量采用快捷指令来实现（或者借助免费的应用来实现）。</p>
 <p>以登录过程为例，进行快捷指令的编写。</p>
@@ -123,7 +123,7 @@
 </tr>
 </tbody></table>
 <p>其中时间戳和RSA加密的sign值需要去获取，获取时间戳可以通过快捷指令来实现。</p>
-<img src="19.png" alt="获取时间戳快捷指令" style="zoom:50%;" />
+<img src="19.png" alt="获取时间戳快捷指令" style="zoom:50%;">
 
 
 
@@ -139,9 +139,9 @@
 <p>一个快捷指令可以看作是程序里的一个函数，可以在其他快捷指令中来调用。使用快捷指令的的登录过程如下：</p>
 <p><img src="22.png" alt="登录快捷指令"></p>
 <p>登录成功返回accessToken，然后在其他操作中需要使用该token。其他的操作都类似，先在快捷指令中调用登录，然后请求相关的api即可。如开门的快捷指令如下：</p>
-<img src="23.png" alt="开门快捷指令" style="zoom:50%;" />
+<img src="23.png" alt="开门快捷指令" style="zoom:50%;">
 
 <p>使用的话可以直接点击<code>开东门</code>的快捷指令，或者使用语音<code>嘿Siri，开东⻔</code>来开启小区入口门。开启其他大门类似，修改对应的terminalCode即可。</p>
 <p>给别人使用的话也很简单，通过快捷指令<a href="https://www.icloud.com/shortcuts/b7cf16f2de72470ab165f80c23efeb5a" target="_blank" rel="noopener"><code>Backup Shortcuts To iCloud</code></a>将所需的快捷指令共享给别人，然后下载JSBOX即可使用。</p>
 <h3 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h3><p>本文通过快捷指令实现了一个”智能开门”指令，快捷指令实现起来比较简单，但是功能有限制，有些功能需要借助一下其他的APP或者平台才能实现，本文为了大众化才采用了比较繁琐的方法来实现，如果是自己使用的话当然是怎么方便怎么来。</p>
-</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/IOS%E9%80%86%E5%90%91/">#IOS逆向</a><a href="/tags/%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4/">#快捷指令</a></p></article></div><footer><div class="paginator"><a href="/2020/12/16/IOS-APP-tomatodo-Cracked/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2021 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/IOS%E9%80%86%E5%90%91/">#IOS逆向</a><a href="/tags/%E5%BF%AB%E6%8D%B7%E6%8C%87%E4%BB%A4/">#快捷指令</a></p></article></div><footer><div class="paginator"><a href="/2022/01/19/Calculate-Captcha-Recognition/" class="prev">上一篇</a><a href="/2020/12/16/IOS-APP-tomatodo-Cracked/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

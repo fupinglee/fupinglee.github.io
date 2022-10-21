@@ -8,46 +8,46 @@
 <p><img src="02.png" alt="注册成功"></p>
 <p>如果想换用户名，取消注册再次注册即可。</p>
 <p>Help-&gt;Unregister Charles…</p>
-<p><img src="03.png" alt=""></p>
+<p><img src="03.png" alt></p>
 <p>接下来我们来分析一下注册的流程，以及如何去破解。</p>
 <h3 id="0x02-分析"><a href="#0x02-分析" class="headerlink" title="0x02 分析"></a>0x02 分析</h3><p>首先打开软件(版本为v4.2.8)，未注册时需要等待10s的动画才可进入，而且30分钟后会退出软件。</p>
 <p>打开Help-&gt;Register Charles…，看到注册界面。</p>
-<p><img src="04.png" alt=""></p>
+<p><img src="04.png" alt></p>
 <p>使用<code>jadx-gui</code>打开charles.jar，搜索字符串<code>Register Charles</code>，定位到<code>com.xk72.charles.gui.frames.RegisterFrame</code>中。</p>
-<p><img src="05.png" alt=""></p>
-<p><img src="06.png" alt=""></p>
+<p><img src="05.png" alt></p>
+<p><img src="06.png" alt></p>
 <p>其中一段代码：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">this</span>.bRegister.addActionListener(<span class="keyword">new</span> NBdE(<span class="keyword">this</span>));</span><br></pre></td></tr></table></figure>
 
 <p>可以看到注册按钮绑定的事件，当按下注册按钮时，执行<code>new NBdE(this)</code>。</p>
 <p>跟进到<code>com.xk72.charles.gui.frames.NBdE</code></p>
-<p><img src="07.png" alt=""></p>
+<p><img src="07.png" alt></p>
 <blockquote>
 <p>其中的trim为Registered Name，trim2为License Key</p>
 </blockquote>
 <p>首先对输入的name和key进行判断，需要其长度要大于0，然后调用<code>qHTb.DdNM(trim, trim2)</code>方法，并对其返回的结果进行判断。当不为null时，注册失败。反之则注册成功。</p>
 <p>跟进<code>com.xk72.charles.qHTb</code>中，调用的是<code>DdNM(String str1,String str2)</code></p>
-<p><img src="08.png" alt=""></p>
+<p><img src="08.png" alt></p>
 <blockquote>
 <p>由之前的推断可以知道，当<code>qHTb.DdNM(str1, str2)=null</code>时注册成功，这里DdNM(String str1,String str2)函数中如果正常执行<code>twLa = new qHTb(str, str2);</code>则会返回null，否则返回异常的信息。所以需要看<code>twLa = new qHTb(str, str2);</code>是否抛出异常，如果未异常，则返回为<code>null</code>，即注册成功；反之，注册失败。</p>
 </blockquote>
 <p>继续跟进构造函数<code>qHTb(String str1,String str2)</code>。</p>
-<p><img src="09.png" alt=""></p>
+<p><img src="09.png" alt></p>
 <p>构造函数<code>qHTb(String str1,String str2)</code>调用了<code>qHTb(String str1,String str2,int i)</code></p>
 <p>其主要代码如下：</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">private</span> <span class="title">qHTb</span><span class="params">(String str, String str2, <span class="keyword">int</span> i)</span> </span>&#123;</span><br><span class="line">     <span class="keyword">boolean</span> z = <span class="keyword">false</span>;</span><br><span class="line">     <span class="keyword">this</span>.gbef = <span class="keyword">false</span>;<span class="comment">//表示是否注册成功 true为成功</span></span><br><span class="line">     <span class="keyword">this</span>.lPpR = <span class="string">"Unregistered"</span>;<span class="comment">//注册成功后为输入的Registered Name</span></span><br><span class="line">     <span class="keyword">try</span> &#123;</span><br><span class="line">         String replaceAll = str.replaceAll(<span class="string">"[  ᠎    　]"</span>, <span class="string">" "</span>);<span class="comment">//替换特殊字符</span></span><br><span class="line">         <span class="keyword">if</span> (DdNM(twLa(replaceAll, str2, <span class="number">4</span>))) &#123;</span><br><span class="line">             z = <span class="keyword">true</span>;</span><br><span class="line">         &#125; <span class="keyword">else</span> <span class="keyword">if</span> (!replaceAll.equals(str)) &#123;</span><br><span class="line">             z = DdNM(twLa(str, str2, <span class="number">4</span>));</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">if</span> (!z) &#123;</span><br><span class="line">             <span class="keyword">throw</span> <span class="keyword">new</span> LicenseException(DdNM(<span class="number">2</span>));</span><br><span class="line">         &#125;</span><br><span class="line">         <span class="keyword">this</span>.lPpR = str;<span class="comment">//注册成功，lPpR为Registered Name</span></span><br><span class="line">         <span class="keyword">this</span>.gbef = <span class="keyword">true</span>;<span class="comment">//注册成功</span></span><br><span class="line">     &#125; <span class="keyword">catch</span> (NumberFormatException e) &#123;</span><br><span class="line">         <span class="keyword">throw</span> <span class="keyword">new</span> LicenseException(DdNM(<span class="number">1</span>));</span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
 
 <p>因此要使注册成功，首先需要<code>twLa(String str,String str2, int i)</code>在调用的时候无异常，并且需要<code>DdNM(long j)</code>返回为true。</p>
-<p><img src="10.png" alt=""></p>
+<p><img src="10.png" alt></p>
 <p>由以上代码可知，当<code>j=lGuB</code>时，返回为true。<code>lGuB</code>为已知常量。即需要满足<code>j=5911726755176091652L;</code>时，<code>DdNM(long j)</code>返回为true。</p>
 <p>接下来看<code>twLa(String str,String str2, int i)</code>。</p>
-<p><img src="11.png" alt=""></p>
+<p><img src="11.png" alt></p>
 <blockquote>
 <p>由于jadx-gui查看twLa未反编译完全，为了查看方便，这里用Idea打开。</p>
 </blockquote>
-<p><img src="12.png" alt=""></p>
+<p><img src="12.png" alt></p>
 <p>twLa方法的三个参数，var1是注册的name，var2是注册的key，var3是4.</p>
-<p><img src="13.png" alt=""></p>
+<p><img src="13.png" alt></p>
 <p>分割线以上的为注册码的校验，下面为对用户名进行操作。可以从以上的代码看出，在用户名操作时没有抛出异常的行为，所以从这里来看，注册成功与否与用户名没有直接关系（因为从之前的推断可知，当出现异常时注册失败）。</p>
 <p>所以这里的破解思路是：</p>
 <p>使用<strong>javassist</strong>修改<code>twLa(String str,String str2, int i)</code>中的第二个参数，为一个可用的注册码，然后使该函数的返回值为<code>5911726755176091652L</code>即可。</p>
@@ -73,14 +73,14 @@
 </blockquote>
 <h4 id="v4-5-4的修改"><a href="#v4-5-4的修改" class="headerlink" title="v4.5.4的修改"></a>v4.5.4的修改</h4><p>当时修改的时候最新版是v4.2.8，10.29号下载的是v4.5.1，还没来得及安装，再次查看最新版已经是v4.5.4了。</p>
 <p>虽然更新了，其中类名和方法名改变了，但是注册的流程还是老样子。根据上面的思路可以进行修改。找到注册校验的类。</p>
-<p><img src="14.png" alt=""></p>
+<p><img src="14.png" alt></p>
 <p>需要修改的类为<code>com.xk72.charles.DIWy</code>。</p>
 <p>需要修改的方法：</p>
 <p>1.<code>private boolean OZtq(long var1)</code>，返回值修改为true。</p>
 <p>2.<code>public static String OZtq(String var0, String var1)</code>，第二个参数为可用的key。</p>
 <p>修改的代码就不贴了，和上面的一样，修改一下类名和方法名即可。</p>
 <p>打开Charles后任意用户名+任意注册码注册成功。</p>
-<p><img src="15.png" alt=""></p>
+<p><img src="15.png" alt></p>
 <p>更改后的文件：<a href="https://fuping.site/files/DIWy.class">https://fuping.site/files/DIWy.class</a></p>
 <h3 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h3><p>关于Charles破解的文章，网上有很多。大多数都是直接修改了注册的标志和注册的信息，本文也是提供了另外一种破解的思路。通过简单分析注册的流程，然后使用javassist进行java文件的修改，以此达到破解的目的。</p>
 <p>关于更多Charles破解相关的文章，可以参考以下几篇：</p>
@@ -88,4 +88,4 @@
 <p>[2].<a href="http://www.520monkey.com/archives/1295" target="_blank" rel="noopener">http://www.520monkey.com/archives/1295</a> （有分析和修改）</p>
 <p>[3].<a href="https://www.freebuf.com/sectool/205520.html" target="_blank" rel="noopener">https://www.freebuf.com/sectool/205520.html</a> （有详细的javassist使用）</p>
 <p>…</p>
-</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/Charles%E7%A0%B4%E8%A7%A3/">#Charles破解</a><a href="/tags/%E8%BD%AF%E4%BB%B6%E7%A0%B4%E8%A7%A3/">#软件破解</a><a href="/tags/javassist/">#javassist</a></p></article></div><footer><div class="paginator"><a href="/2020/04/18/WeiQing-CMS-Background-Admin-GetShell/" class="prev">PREV</a><a href="/2019/02/21/WinRAR-Extracting-Code-Execution-Validate/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2021 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/Charles%E7%A0%B4%E8%A7%A3/">#Charles破解</a><a href="/tags/%E8%BD%AF%E4%BB%B6%E7%A0%B4%E8%A7%A3/">#软件破解</a><a href="/tags/javassist/">#javassist</a></p></article></div><footer><div class="paginator"><a href="/2020/04/18/WeiQing-CMS-Background-Admin-GetShell/" class="prev">上一篇</a><a href="/2019/02/21/WinRAR-Extracting-Code-Execution-Validate/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

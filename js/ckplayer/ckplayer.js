@@ -714,7 +714,7 @@ function ckplayerConfig() {
 								type = '';
 							}
 						}
-						source += '<source src="' + decodeURIComponent(va[0]) + '"' + type + '>';
+						source += '<source src="' + decodeURIComponent(va[0]) + '" ' + type>';
 					}
 					this.videoTemp['source'] = source;
 				}
@@ -743,7 +743,7 @@ function ckplayerConfig() {
 						} else {
 							trackDefault = '';
 						}
-						track += '<track kind="' + trackObj['kind'] + '" src="' + trackObj['src'] + '" srclang="' + trackObj['srclang'] + '" label="' + trackObj['label'] + '"' + trackDefault + '>';
+						track += '<track kind="' + trackObj['kind'] + '" src="' + trackObj['src'] + '" srclang="' + trackObj['srclang'] + '" label="' + trackObj['label'] + '" ' + trackdefault>';
 					}
 				}
 				var autoLoad = this.ckplayerConfig['config']['autoLoad'];
@@ -769,9 +769,9 @@ function ckplayerConfig() {
 				} else {
 					var html = '';
 					if (!this.isM3u8) {
-						html = '<video id="' + vid + '"' + src + ' width="100%" height="100%"' + autoplay + poster + loop + preload + controls + mobileautofull + track + '>' + source + '</video>';
+						html = '<video id="' + vid + '" ' + src width="100%" height="100%" autoplay poster loop preload controls mobileautofull track>' + source + '</video>';
 					} else {
-						html = '<video id="' + vid + '" width="100%" height="100%"' + poster + loop + preload + controls + mobileautofull + track + '></video>';
+						html = '<video id="' + vid + '" width="100%" height="100%" ' + poster loop preload controls mobileautofull track></video>';
 					}
 					this.PD.innerHTML = html;
 					this.V = this.getByElement('#' + vid); //V：定义播放器对象全局变量
@@ -3025,7 +3025,7 @@ function ckplayerConfig() {
 					if (me[3]) {
 						me[3] = 'target="' + me[3] + '"';
 					}
-					html += '<p><a href="' + me[2] + '"' + me[3] + '>' + me[0] + '</a></p>';
+					html += '<p><a href="' + me[2] + '" ' + me[3]>' + me[0] + '</a></p>';
 					break;
 				case 'javaScript':
 					html += '<p><a href="javascript:' + me[2] + '">' + me[0] + '</a></p>';
@@ -3371,9 +3371,7 @@ function ckplayerConfig() {
 			if (!nowD) {
 				if(this.subtitlesTemp==-1){
 					var indexN=0;
-					for(var i=0;i<vArr.length;i++){
-						var li=vArr[i];
-						if(li.length==3 && li[2]>indexN){
+					for(var i=0;i<vArr.length;i++){ var li="vArr[i];" if(li.length="=3" && li[2]>indexN){
 							indexN=li[2];
 							this.subtitlesTemp=i;
 						}
@@ -3706,7 +3704,7 @@ function ckplayerConfig() {
 						if (va[1]) {
 							type = ' type="' + va[1] + '"';
 						}
-						source += '<source src="' + va[0] + '"' + type + '>';
+						source += '<source src="' + va[0] + '" ' + type>';
 					}
 					this.V.removeAttribute('src');
 					this.V.innerHTML = source;
@@ -3909,13 +3907,7 @@ function ckplayerConfig() {
 				scale: 0
 			};
 			preview = this.standardization(preview, this.vars['preview']);
-			if (preview['file'] == null || preview['scale'] <= 0) {
-				return;
-			}
-			var srcArr = preview['file'];
-			if (this.previewStart == 0) { //如果还没有构建，则先进行构建
-				this.previewStart = 1;
-				if (srcArr.length > 0) {
+			if (preview['file'] == null || preview['scale'] <= 0) { return; } var srcarr="preview['file'];" if (this.previewstart="=" 如果还没有构建，则先进行构建 this.previewstart="1;" (srcarr.length> 0) {
 					var i = 0;
 					var imgW = 0,
 					imgH = 0;
@@ -4121,7 +4113,7 @@ function ckplayerConfig() {
 						if (va[1]) {
 							type = ' type="' + va[1] + '"';
 						}
-						source += '<source src="' + va[0] + '"' + type + '>';
+						source += '<source src="' + va[0] + '" ' + type>';
 					}
 					this.V.removeAttribute('src');
 					this.V.innerHTML = source;
@@ -5317,9 +5309,7 @@ function ckplayerConfig() {
 				if(def==-1){
 					var index=0;
 					var indexN=0;
-					for(var i=0;i<track.length;i++){
-						var li=track[i];
-						if(li.length==3 && li[2]>indexN){
+					for(var i=0;i<track.length;i++){ var li="track[i];" if(li.length="=3" && li[2]>indexN){
 							indexN=li[2];
 							index=i;
 						}
@@ -5380,149 +5370,7 @@ function ckplayerConfig() {
 				this.nowTrackShow=当前显示在界面上的内容
 				如果当前时间正好在nowTrack时间内，则需要判断
 			*/
-			if (this.time >= nowTrack['startTime'] && this.time <= nowTrack['endTime']) {
-				/*
-				 	如果当前显示的内容不等于当前需要显示的内容时，则需要显示正确的内容
-				*/
-				var nowShow = this.nowTrackShow;
-				if (nowShow['sn'] != nowTrack['sn']) {
-					this.trackHide();
-					this.trackShow(nowTrack);
-					this.nowTrackTemp=nowTrack;
-				}
-			} else {
-				/*
-				 * 如果当前播放时间不在当前编号字幕内，则需要先清空当前的字幕内容，再显示新的字幕内容
-				 */
-				this.trackHide();
-				this.checkTrack();
-			}
-		},
-		trackShowAgain:function(){
-			this.trackHide();
-			this.trackShow(this.nowTrackTemp);
-		},
-		/*
-			内部函数
-			显示字幕内容
-		*/
-		trackShow: function(track) {
-			this.nowTrackShow = track;
-			var arr = track['content'];
-			for (var i = 0; i < arr.length; i++) {
-				var obj = {
-					list: [{
-						type: 'text',
-						text: arr[i],
-						color: '#FFFFFF',
-						size: this.trackFontSize,
-						font: this.fontFamily,
-						lineHeight: this.trackLineHeight+'px'
-					}],
-					position: [1, 2, null, -(arr.length - i) * this.trackLineHeight - 50]
-				};
-				var ele = this.addElement(obj);
-				this.trackElement.push(ele);
-			}
-		},
-		/*
-			内部函数
-			隐藏字字幕内容
-		*/
-		trackHide: function() {
-			for (var i = 0; i < this.trackElement.length; i++) {
-				this.deleteElement(this.trackElement[i]);
-			}
-			this.trackElement = [];
-		},
-		/*
-			内部函数
-			重新计算字幕的编号
-		*/
-		checkTrack: function() {
-			var num = this.trackIndex;
-			var arr = this.track;
-			var i = 0;
-			for (i = num; i < arr.length; i++) {
-				if (this.time >= arr[i]['startTime'] && this.time <= arr[i]['endTime']) {
-					this.trackIndex = i;
-					break;
-				}
-			}
-		},
-		/*
-		-----------------------------------------------------------------------------接口函数开始
-			接口函数
-			在播放和暂停之间切换
-		*/
-		playOrPause: function() {
-			if (!this.loaded) {
-				return;
-			}
-			if (this.V == null) {
-				return;
-			}
-			if (this.playerType == 'flashplayer') {
-				this.V.playOrPause();
-				return;
-			}
-			if (this.V.paused) {
-				this.videoPlay();
-			} else {
-				this.videoPause();
-			}
-		},
-		/*
-			接口函数
-			播放动作
-		*/
-		videoPlay: function() {
-			if (!this.loaded) {
-				return;
-			}
-			if (this.playerType == 'flashplayer') {
-				this.V.videoPlay();
-				return;
-			}
-			if (this.adPlayerPlay) {
-				this.eliminateAd(); //清除广告
-				return;
-			}
-			try {
-				if (this.V.currentSrc) {
-					this.V.play();
-				}
-			} catch(event) {}
-		},
-		/*
-			接口函数
-			暂停动作
-		*/
-		videoPause: function() {
-			if (!this.loaded) {
-				return;
-			}
-			if (this.playerType == 'flashplayer') {
-				this.V.videoPause();
-				return;
-			}
-			try {
-				this.V.pause();
-			} catch(event) {}
-		},
-		/*
-			接口函数
-			跳转时间动作
-		*/
-		videoSeek: function(time) {
-			if (!this.loaded) {
-				return;
-			}
-			if (this.playerType == 'flashplayer') {
-				this.V.videoSeek(time);
-				return;
-			}
-			var duration = this.V.duration>0.2?this.V.duration:this.getMetaDate()['duration'];
+			if (this.time >= nowTrack['startTime'] && this.time <= nowtrack['endtime']) { * 如果当前显示的内容不等于当前需要显示的内容时，则需要显示正确的内容 var nowshow="this.nowTrackShow;" if (nowshow['sn'] !="nowTrack['sn'])" this.trackhide(); this.trackshow(nowtrack); this.nowtracktemp="nowTrack;" } else 如果当前播放时间不在当前编号字幕内，则需要先清空当前的字幕内容，再显示新的字幕内容 this.checktrack(); }, trackshowagain:function(){ this.trackshow(this.nowtracktemp); 内部函数 显示字幕内容 trackshow: function(track) this.nowtrackshow="track;" arr="track['content'];" for (var i="0;" < arr.length; i++) obj="{" list: [{ type: 'text', text: arr[i], color: '#ffffff', size: this.trackfontsize, font: this.fontfamily, lineheight: this.tracklineheight+'px' }], position: [1, 2, null, -(arr.length - i) this.tracklineheight 50] }; ele="this.addElement(obj);" this.trackelement.push(ele); 隐藏字字幕内容 trackhide: function() this.trackelement.length; this.deleteelement(this.trackelement[i]); this.trackelement="[];" 重新计算字幕的编号 checktrack: num="this.trackIndex;" (i="num;" (this.time>= arr[i]['startTime'] && this.time <= arr[i]['endtime']) { this.trackindex="i;" break; } }, * -----------------------------------------------------------------------------接口函数开始 接口函数 在播放和暂停之间切换 playorpause: function() if (!this.loaded) return; (this.v="=" null) (this.playertype="=" 'flashplayer') this.v.playorpause(); (this.v.paused) this.videoplay(); else this.videopause(); 播放动作 videoplay: this.v.videoplay(); (this.adplayerplay) this.eliminatead(); 清除广告 try (this.v.currentsrc) this.v.play(); catch(event) {} 暂停动作 videopause: this.v.videopause(); this.v.pause(); 跳转时间动作 videoseek: function(time) this.v.videoseek(time); var duration="this.V.duration">0.2?this.V.duration:this.getMetaDate()['duration'];
 			if (duration > 0 && time > duration) {
 				if(this.vars['forceduration']>0){
 					time=0;
@@ -6208,12 +6056,12 @@ function ckplayerConfig() {
 			var html = '',
 			src = javascriptPath + 'ckplayer.swf';
 			id = 'id="' + vid + '" name="' + vid + '" ';
-			html += '<object pluginspage="' + flashplayerUrl + '" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000"  codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=11,3,0,0" width="100%" height="100%" ' + id + ' align="middle" wmode="transparent">';
+			html += '<object pluginspage="' + flashplayerUrl + '" classid="clsid:d27cdb6e-ae6d-11cf-96b8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=11,3,0,0" width="100%" height="100%" ' + id align="middle" wmode="transparent">';
 			html += param['v'];
 			html += '<param name="movie" value="' + src + '">';
 			html += '<param name="flashvars" value="' + flashvars + '">';
 			html += '<param name="wmode" value="transparent">';
-			html += '<embed wmode="transparent" ' + param['w'] + ' src="' + src + '" flashvars="' + flashvars + '" width="100%" height="100%" ' + id + ' align="middle" type="application/x-shockwave-flash" pluginspage="' + flashplayerUrl + '" />';
+			html += '<embed wmode="transparent" ' + param['w'] src="' + src + '" flashvars="' + flashvars + '" width="100%" height="100%" id align="middle" type="application/x-shockwave-flash" pluginspage="' + flashplayerUrl + '">';
 			html += '</object>';
 			this.PD.innerHTML = html;
 			this.V = this.getObjectById(vid); //V：定义播放器对象全局变量
@@ -6379,7 +6227,7 @@ function ckplayerConfig() {
 			};
 			for (var e in o) {
 				w += e + '="' + o[e] + '" ';
-				v += '<param name="' + e + '" value="' + o[e] + '" />';
+				v += '<param name="' + e + '" value="' + o[e] + '">';
 			}
 			w = w.replace('movie=', 'src=');
 			return {
@@ -6718,7 +6566,7 @@ function ckplayerConfig() {
 						if (clickEvent['type'] == 'link') {
 							html += '<div class="' + newEleid + '" data-i="' + i + '"><div class="' + newEleid + '_bg"></div><div class="' + newEleid + '_text"><a href="' + clickEvent['link'] + '" target="' + clickEvent['target'] + '">' + list[i]['text'] + '</a></div></div>';
 						} else {
-							html += '<div  class="' + newEleid + '" data-i="' + i + '"><div class="' + newEleid + '_bg"></div><div class="' + newEleid + '_text">' + list[i]['text'] + '</div></div>';
+							html += '<div class="' + newEleid + '" data-i="' + i + '"><div class="' + newEleid + '_bg"></div><div class="' + newEleid + '_text">' + list[i]['text'] + '</div></div>';
 						}
 						break;
 					default:
@@ -8640,4 +8488,4 @@ function ckplayerConfig() {
 		}
 	};
 	window.ckplayer = ckplayer;
-})();
+})();</[^></=></=></track.length;i++){></=></vArr.length;i++){>
