@@ -22,24 +22,24 @@
 </blockquote>
 <p>安装后执行<code>appium-doctor --ios</code>指令，可以查看与iOS相关配置是否完整。</p>
 <p>如果有哪一项是打叉的，则根据安装说明进行安装就可以了。</p>
-<p><img src="02.png" alt=""></p>
+<p><img src="02.png" alt></p>
 <p>下图是全部配置都成功的情况。</p>
-<p><img src="01.png" alt=""></p>
+<p><img src="01.png" alt></p>
 <p>由于需要在真机下进行测试所以还需要配置<a href="https://github.com/facebookarchive/WebDriverAgent" target="_blank" rel="noopener">WebDriverAgent</a>。</p>
 <h3 id="配置WebDriverAgent"><a href="#配置WebDriverAgent" class="headerlink" title="配置WebDriverAgent"></a>配置WebDriverAgent</h3><p>下载<a href="https://github.com/facebookarchive/WebDriverAgent" target="_blank" rel="noopener">WebDriverAgent</a>。</p>
 <p>进入到WebDriverAgent目录，然后执行<code>./Scripts/bootstrap.sh</code>下载安装依赖库。</p>
-<p><img src="03.png" alt=""></p>
+<p><img src="03.png" alt></p>
 <p>双击<code>WebDriverAgent.xcodeproj</code>使用xcode打开WebDriverAgent项目</p>
 <p>配置<code>WebDriverAgentLib</code>、<code>WebDriverAgentRunner</code>以及<code>IntegrationApp</code>的开发者信息</p>
-<p><img src="04.png" alt=""></p>
+<p><img src="04.png" alt></p>
 <p>发现有错误，接下来修改<code>WebDriverAgentRunner</code>和<code>IntegrationApp</code>的<code>Bundle identifier</code>。</p>
 <p><img src="05.png" alt="修改WebDriverAgentRunner"></p>
 <p><img src="06.png" alt="修改IntegrationApp"></p>
 <p>修改后发现无报错信息。然后数据线连接真机，进行安装。</p>
 <p>发现编译失败，将 <code>assign</code> 改成 <code>unsafe_unretained</code> ，然后重新使用<code>command + u</code>进行编译安装测试。</p>
-<p><img src="07.png" alt=""></p>
+<p><img src="07.png" alt></p>
 <p>然后访问<code>http://手机IP:8100</code>。如<a href="http://172.20.10.1:8100/status" target="_blank" rel="noopener">http://172.20.10.1:8100/status</a> 。</p>
-<p><img src="08.png" alt=""></p>
+<p><img src="08.png" alt></p>
 <blockquote>
 <p>需要手机与电脑处于同一网络下，我这里为了测试，电脑连接的是手机的热点。</p>
 </blockquote>
@@ -48,7 +48,7 @@
 <p>直接替换即可，或者直接修改Appium中的WebDriverAgent，效果一样。</p>
 <p>接下来就是自动化脚本的编写。</p>
 <h3 id="自动化脚本编写"><a href="#自动化脚本编写" class="headerlink" title="自动化脚本编写"></a>自动化脚本编写</h3><p>可以通过使用Appium应用程序查看IOS元素特征。启动Appium，左上角菜单栏选择<code>APPium</code>-<code>New Session Window...</code>(或者快捷键<code>command+N</code>)。</p>
-<p><img src="09.png" alt=""></p>
+<p><img src="09.png" alt></p>
 <p>填写对应的启动参数。</p>
 <p>一些必要的参数：</p>
 <ul>
@@ -57,7 +57,7 @@
 <li>bundleId需测试程序的bundle id,可以通过<code>ios-deploy --list_bundle_id</code>查询</li>
 </ul>
 <p>配置完成后，点击<code>Start Session</code>，手机会自动打开<code>哔哩哔哩</code>APP。</p>
-<p><img src="10.png" alt=""></p>
+<p><img src="10.png" alt></p>
 <p>可以利用xpath获取元素并进行输入、点击等一系列操作。接下来就可以通过使用Python脚本来进行自动化测试了。</p>
 <p>需要安装appium的python依赖库。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install Appium-Python-Client</span><br></pre></td></tr></table></figure>
@@ -125,4 +125,4 @@
 <p>也成功找到经过md5加密的密码。</p>
 <h2 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h2><p>这次是因为B站开启了青少年模式，后来密码给忘记了。当时只想着用爆破的方式来解决了，没有想着抓包或者查看保存的数据文件。后来爆破出密码后，又发现可以通过查看配置文件的方式和抓包的方式找到密码。而且之前是打算用ios作为测试的，后来因为效率的问题，才转战安卓。如果使用安卓的话，自动化测试工具也很多，例如UIAutomator2等。</p>
 <p>本文其实就是一个流水账，记录一下自己找回青少年模式密码的过程，可能比较粗糙。有关IOS真机调试更详细的教程可以参考<a href="https://www.jianshu.com/p/ae8846736dba" target="_blank" rel="noopener">使用Appium进行iOS的真机自动化测试</a> 。</p>
-</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/Appium/">#Appium</a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">#自动化测试</a><a href="/tags/%E9%9D%92%E5%B0%91%E5%B9%B4%E6%A8%A1%E5%BC%8F/">#青少年模式</a></p></article></div><footer><div class="paginator"><a href="/2020/11/27/ShiroExploit-Readme/" class="prev">上一篇</a><a href="/2020/04/18/WeiQing-CMS-Background-Admin-GetShell/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/Appium/">#Appium</a><a href="/tags/%E8%87%AA%E5%8A%A8%E5%8C%96%E6%B5%8B%E8%AF%95/">#自动化测试</a><a href="/tags/%E9%9D%92%E5%B0%91%E5%B9%B4%E6%A8%A1%E5%BC%8F/">#青少年模式</a></p></article></div><footer><div class="paginator"><a href="/2020/11/27/ShiroExploit-Readme/" class="prev">PREV</a><a href="/2020/04/18/WeiQing-CMS-Background-Admin-GetShell/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

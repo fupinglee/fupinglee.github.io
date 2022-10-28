@@ -3,9 +3,9 @@
 <a id="more"></a>
 
 <h2 id="0x02-双向证书认证与解决方法"><a href="#0x02-双向证书认证与解决方法" class="headerlink" title="0x02 双向证书认证与解决方法"></a>0x02 双向证书认证与解决方法</h2><p>在对soulApp进行抓包的时候，提示<strong><code>网络错误,请检查网络后重试~</code></strong></p>
-<p><img src="01.png" alt=""></p>
+<p><img src="01.png" alt></p>
 <p>本来以为直接把这个okhttp的证书hook修改成系统默认的即可，就没有详细说明这一部分，结果有网友问双向证书认证这部分是如何处理的，就详细来说明一下如何处理。这里时由于采用了双向证书认证的缘故，所以抓包返回400错误，直接浏览器访问<a href="https://account.soulapp.cn/" target="_blank" rel="noopener">https://account.soulapp.cn/</a> ，也是不行的</p>
-<p><img src="02.png" alt=""></p>
+<p><img src="02.png" alt></p>
 <p>提示<code>No required SSL certificate was sent.</code>如果要访问成功，就要带上证书。</p>
 <blockquote>
 <p>关于双向证书认证：客户端有自己的密匙，并持有服务端的证书，服务端给客户端发送数据时，需要将服务端的证书发给客户端验证，验证通过才运行发送数据，同样，客户端请求服务器数据时，也需要将自己的证书发给服务端验证，通过才允许执行请求。详细的内容可以参考<a href="https://blog.csdn.net/enweitech/article/details/53813183。" target="_blank" rel="noopener">https://blog.csdn.net/enweitech/article/details/53813183。</a></p>
@@ -28,18 +28,18 @@
 <p>此时<code>clientAuth=&quot;false&quot;</code>，未开启客户端校验。</p>
 </blockquote>
 <p>启动服务器并访问。</p>
-<p><img src="03.png" alt=""></p>
+<p><img src="03.png" alt></p>
 <p>虽然提示错误但是点继续前往即可访问。</p>
-<p><img src="04.png" alt=""></p>
+<p><img src="04.png" alt></p>
 <p>设置开启客户端校验，即<code>clientAuth=&quot;true&quot;</code></p>
 <p>然后重启后访问</p>
-<p><img src="05.png" alt=""></p>
+<p><img src="05.png" alt></p>
 <p>无法正常访问，想要正常访问，浏览器导入证书即可</p>
-<p><img src="06.png" alt=""></p>
+<p><img src="06.png" alt></p>
 <p>下一步然后输入密码</p>
-<p><img src="07.png" alt=""></p>
+<p><img src="07.png" alt></p>
 <p>刷新页面，提示选择证书。</p>
-<p><img src="08.png" alt=""></p>
+<p><img src="08.png" alt></p>
 <p>确定后即可访问。</p>
 <h3 id="2-soulAPP双向认证解决方法"><a href="#2-soulAPP双向认证解决方法" class="headerlink" title="2.soulAPP双向认证解决方法"></a>2.soulAPP双向认证解决方法</h3><p>同理这里soulApp也可以这样做。</p>
 <p>这里列举三种方法来完成客户端的验证。归根结底都是证书的利用。</p>
@@ -49,39 +49,39 @@
 <blockquote>
 <p>证书的位置位于资源文件assets中。</p>
 </blockquote>
-<p><img src="09.png" alt=""></p>
+<p><img src="09.png" alt></p>
 <blockquote>
 <p>标记的1处输入的是soul证书的密码，2和3为证书导入浏览器自己设置的密码，这里为123456</p>
 </blockquote>
 <p>然后导入浏览器，重新访问<a href="https://account.soulapp.cn/" target="_blank" rel="noopener">https://account.soulapp.cn/</a></p>
-<p><img src="10.png" alt=""></p>
+<p><img src="10.png" alt></p>
 <p>选择证书后确定。</p>
-<p><img src="https://i.imgur.com/63SKzUi.png" alt=""></p>
+<p><img src="https://i.imgur.com/63SKzUi.png" alt></p>
 <p>根据页面显示内容可以发现此时导入证书后可以正常访问。</p>
 <h4 id="b-利用程序完成认证"><a href="#b-利用程序完成认证" class="headerlink" title="b)利用程序完成认证"></a>b)利用程序完成认证</h4><p>利用程序的话，参考<code>cn.soulapp.android.api.e.a()</code>方法，进行证书的操作。</p>
-<p><img src="11.png" alt=""></p>
+<p><img src="11.png" alt></p>
 <p>精简之后主要代码如下：</p>
-<p><img src="12.png" alt=""></p>
+<p><img src="12.png" alt></p>
 <p>然后利用httpclient进行http请求。</p>
 <p>当访问不加证书的效果：</p>
-<p><img src="13.png" alt=""></p>
+<p><img src="13.png" alt></p>
 <p>使用证书的结果：</p>
-<p><img src="14.png" alt=""></p>
+<p><img src="14.png" alt></p>
 <blockquote>
 <p>由于这是这是之前的数据包，所以已经过期，再次使用需要更换时间戳和签名，但结果成功的。</p>
 </blockquote>
 <h4 id="c-利用抓包工具"><a href="#c-利用抓包工具" class="headerlink" title="c)利用抓包工具"></a>c)利用抓包工具</h4><p>使用抓包工具，这里以burp为例。</p>
 <p>未导入证书抓包结果：</p>
-<p><img src="15.png" alt=""></p>
+<p><img src="15.png" alt></p>
 <p>提示400错误，我们在burp中导入证书</p>
-<p><img src="16.png" alt=""></p>
+<p><img src="16.png" alt></p>
 <p>选择证书并输入密码。</p>
-<p><img src="17.png" alt=""></p>
+<p><img src="17.png" alt></p>
 <p>证书导入成功。</p>
-<p><img src="18.png" alt=""></p>
+<p><img src="18.png" alt></p>
 <p>再次抓包</p>
-<p><img src="19.png" alt=""></p>
+<p><img src="19.png" alt></p>
 <p>已经可以正常抓取了。</p>
 <p>当然使用其他方法也是可行的，这里就不再列举了。</p>
 <h3 id="0x03-总结"><a href="#0x03-总结" class="headerlink" title="0x03 总结"></a>0x03 总结</h3><p>本文主要是为了解决APP与服务器之间的双向证书认证问题，没有太多的技巧，主要就是证书的使用。如果服务器采用了双向认证，那么一般在APP中有证书和证书密码的存在，找到之后导入抓包工具即可。</p>
-</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/SoulAPP/">#SoulAPP</a><a href="/tags/%E5%8F%8C%E5%90%91%E8%AF%81%E4%B9%A6/">#双向证书</a></p></article></div><footer><div class="paginator"><a href="/2019/02/21/WinRAR-Extracting-Code-Execution-Validate/" class="prev">上一篇</a><a href="/2019/01/28/Xposed-Hook-SoulApp/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/SoulAPP/">#SoulAPP</a><a href="/tags/%E5%8F%8C%E5%90%91%E8%AF%81%E4%B9%A6/">#双向证书</a></p></article></div><footer><div class="paginator"><a href="/2019/02/21/WinRAR-Extracting-Code-Execution-Validate/" class="prev">PREV</a><a href="/2019/01/28/Xposed-Hook-SoulApp/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>

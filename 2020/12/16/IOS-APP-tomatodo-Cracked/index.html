@@ -3,16 +3,16 @@
 <a id="more"></a>
 
 <h2 id="0x01-背景"><a href="#0x01-背景" class="headerlink" title="0x01 背景"></a>0x01 背景</h2><p>前段时间在一个老师那里看到一群考研人的打卡信息，该APP能够详细的记录和分析学习过程。</p>
-<img src="01.png" alt="考研人打卡信息" style="zoom:50%;" />
+<img src="01.png" alt="考研人打卡信息" style="zoom:50%;">
 
 <p>于是就下载试用了一下。但是免费版有许多的限制。如免费版的话仅可以添加2个”习惯”类代办，</p>
-<img src="02.png" alt="添加代办" style="zoom:33%;" />
+<img src="02.png" alt="添加代办" style="zoom:33%;">
 
 <p>使用背景图也是需要开通季度卡的（虽然并没什么用）。</p>
-<img src="03.png" alt="背景" style="zoom:33%;" />
+<img src="03.png" alt="背景" style="zoom:33%;">
 
 <p>手机上打开”季度卡”页面，由于手机经过了越狱，在开通的时候提示<code>非常抱歉，由于Apple的安全策略，暂不支持越狱用户购买，可点击右上角获取帮助-其他问题联系我们解决</code>。</p>
-<img src="04.png" alt="越狱禁止购买" style="zoom:33%;" />
+<img src="04.png" alt="越狱禁止购买" style="zoom:33%;">
 
 <p>虽然免费版不影响正常使用，但是本着学习的态度想查看一下其越狱检测的绕过，结果发现竟然可以白嫖使用<code>VIP</code>功能。</p>
 <h2 id="0x02-逆向分析"><a href="#0x02-逆向分析" class="headerlink" title="0x02 逆向分析"></a>0x02 逆向分析</h2><p>IOS下逆向常规操作判断该APP是否加壳(加密)，有壳的话先进行砸壳，然后利用IDA或者Hopper对脱壳后的Mach-O文件进行分析。首先需要准备一下环境和工具。</p>
@@ -61,7 +61,7 @@
 
 <p><img src="09.png" alt="越狱绕过"></p>
 <p>此时再次打开APP，可以成功进入季度卡开通界面。</p>
-<img src="10.png" alt="越狱绕过结果" style="zoom:33%;" />
+<img src="10.png" alt="越狱绕过结果" style="zoom:33%;">
 
 
 
@@ -85,12 +85,12 @@
 <p>再次执行 frida-trace，<code>/CommonUtil/isActive.js</code> 文件不会覆盖，会执行刚才添加好的代码，如下：</p>
 <p><img src="14.png" alt="fridaHook-isActive"></p>
 <p>此时发现不仅可以使用季度卡背景</p>
-<img src="15.png" alt="bg-freeUse" style="zoom:33%;" />
+<img src="15.png" alt="bg-freeUse" style="zoom:33%;">
 
 
 
 <p>而且也可以可以添加多个习惯类代办</p>
-<img src="16.png" alt="frida-isActivite" style="zoom:33%;" />
+<img src="16.png" alt="frida-isActivite" style="zoom:33%;">
 
 <blockquote>
 <p>其实并不是，在测试的时候由于没有注意，添加了两个<code>习惯</code>和一个<code>目标</code>，导致认为通过hook <code>+[CommonUtil isActive]</code>方法可以解锁全部的VIP功能，一直到后来写插件的时候才发现该错误，在编写非越狱插件时有详细的分析。</p>
@@ -102,10 +102,10 @@
 <p>安装完成后新建MonkeyApp</p>
 <p><img src="17.png" alt="新建MonkeyApp"></p>
 <p>输入项目名称</p>
-<img src="18.png" alt="项目名称" style="zoom: 50%;" />
+<img src="18.png" alt="项目名称" style="zoom: 50%;">
 
 <p>项目建立后将砸壳后的APP拖入到TargetApp目录下。</p>
-<img src="19.png" alt="放入TargetApp目录下" style="zoom:50%;" />
+<img src="19.png" alt="放入TargetApp目录下" style="zoom:50%;">
 
 
 
@@ -120,7 +120,7 @@
 <blockquote>
 <p>首次在新设备上运行，需要设置-通用-描述文件与设备管理中信任证书。</p>
 </blockquote>
-<img src="21.png" alt="非越狱设备运行" style="zoom: 33%;" />
+<img src="21.png" alt="非越狱设备运行" style="zoom: 33%;">
 
 <p>然而此时只能使用<code>VIP</code>的部分功能，可以使用会员背景，但是无法添加超过2个<code>习惯</code>和<code>目标</code>类代办。此时才发现在使用frida进行hook的时候，测试添加多个习惯类代办时添加了两个<code>习惯</code>，一个<code>目标</code>，因此给出了可以使用全部<code>VIP</code>功能的结论。</p>
 <p>通过关键字定位到<code>-[AddTodoController confirm]</code>方法。</p>
@@ -133,11 +133,11 @@
 <figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">GVUserDefaults</span> : <span class="title">NSObject</span></span></span><br><span class="line"><span class="keyword">@property</span>(<span class="keyword">nonatomic</span>) _Bool isActive;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line">%hook GVUserDefaults</span><br><span class="line"></span><br><span class="line">+ (<span class="keyword">id</span>)standardUserDefaults&#123;</span><br><span class="line">    GVUserDefaults *gvUser = %orig();</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"GVUserDefaults isActive old----&gt;%d"</span>,[gvUser isActive]);</span><br><span class="line">    [gvUser setIsActive:<span class="literal">true</span>];</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"GVUserDefaults isActive new----&gt;%d"</span>,[gvUser isActive]);</span><br><span class="line">    <span class="keyword">return</span> gvUser;</span><br><span class="line">&#125;</span><br><span class="line">%end</span><br></pre></td></tr></table></figure>
 
 <p>执行结果</p>
-<img src="24.png" alt="hook standardUserDefaults" style="zoom:50%;" />
+<img src="24.png" alt="hook standardUserDefaults" style="zoom:50%;">
 
 <p>此时可以使用超过2个<code>习惯</code>和<code>目标</code>类以及使用全部的背景功能。</p>
-<img src="25.png" alt="解锁全部VIP功能" style="zoom: 33%;" />
+<img src="25.png" alt="解锁全部VIP功能" style="zoom: 33%;">
 
 <h2 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h2><p>本文通过一个简单的APP逆向，实现了越狱绕过以及解锁VIP会员功能。简单的介绍了一下相关工具的使用。关于越狱绕过，该APP越狱检测的方法很简单，只是判断了文件是否存在。其他检测的方式有：可以尝试读取系统所有的应用名称列表，看有无权限获取；检测stat是否出自系统库等。更多检测方式可以参考<a href="https://kingdomrain002.github.io/2019/01/14/iOS开发-安全相关-越狱检测/" target="_blank" rel="noopener">iOS开发-安全相关-越狱检测</a> 。</p>
 <p>对于该APP使用体验来讲，免费版功能已经够用了，而且无广告，如果有需要的可以开通季度卡，解锁更多功能。</p>
-</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/IOS%E9%80%86%E5%90%91/">#IOS逆向</a><a href="/tags/frida/">#frida</a></p></article></div><footer><div class="paginator"><a href="/2021/02/04/IOS-ShortCut-And-Smart-Lock/" class="prev">上一篇</a><a href="/2020/11/27/ShiroExploit-Readme/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/IOS%E9%80%86%E5%90%91/">#IOS逆向</a><a href="/tags/frida/">#frida</a></p></article></div><footer><div class="paginator"><a href="/2021/02/04/IOS-ShortCut-And-Smart-Lock/" class="prev">PREV</a><a href="/2020/11/27/ShiroExploit-Readme/" class="next">NEXT</a></div><div class="copyright"><p>© 2016 - 2022 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
