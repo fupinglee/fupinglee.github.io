@@ -1,0 +1,59 @@
+<!DOCTYPE html><html lang="zh-Hans"><head><meta charset="utf-8"><meta name="X-UA-Compatible" content="IE=edge"><title> 【IOS逆向】越狱环境搭建 · 浮萍's Blog</title><meta name="description" content="【IOS逆向】越狱环境搭建 - 浮萍"><meta name="viewport" content="width=device-width, initial-scale=1"><link rel="icon" href="/"><link rel="stylesheet" href="/css/apollo.css"><link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="search" type="application/opensearchdescription+xml" href="https://fuping.site/atom.xml" title="浮萍's Blog"><script src="//code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script><meta name="generator" content="Hexo 4.2.1"><link rel="alternate" href="/atom.xml" title="浮萍's Blog" type="application/atom+xml">
+</head><body><div class="wrap"><header><a href="/" class="logo-link"><img src="/favicon.png" alt="logo"></a><ul class="nav nav-list"><li class="nav-list-item"><a href="/" target="_self" class="nav-list-link">主页</a></li><li class="nav-list-item"><a href="/archives/" target="_self" class="nav-list-link">所有文章</a></li><li class="nav-list-item"><a href="/tags" target="_self" class="nav-list-link">标签</a></li><li class="nav-list-item"><a href="/about" target="_self" class="nav-list-link">关于</a></li><li class="nav-list-item"><a href="/atom.xml" target="_self" class="nav-list-link">RSS</a></li><li class="nav-list-item"><a href="/search" target="_self" class="nav-list-link search"><i class="fa fa-search" aria-hidden="true"></i></a></li></ul></header><main class="container"></main><div class="post"><article class="post-block"><h1 class="post-title">【IOS逆向】越狱环境搭建</h1><div class="post-info">Mar 7, 2023<span class="categories"><i class="fa fa-bookmark" aria-hidden="true"></i></span><a href="/categories/IOS%E9%80%86%E5%90%91/" class="post-category">#IOS逆向</a></div><div class="post-content"><p><a name="WDT9z"></a></p>
+<h1 id="0x00前言"><a href="#0x00前言" class="headerlink" title="0x00前言"></a>0x00前言</h1><p>由于之前用的手机是IPhone6s，版本是12.4，有一些APP打开会直接闪退，于是换了一部6sp，版本是14.6。对其进行越狱，安装一些所需要的插件，并记录一下过程。</p>
+<a id="more"></a>
+<p><a name="lXyGU"></a></p>
+<h1 id="0x01-使用checkra1n越狱"><a href="#0x01-使用checkra1n越狱" class="headerlink" title="0x01 使用checkra1n越狱"></a>0x01 使用checkra1n越狱</h1><p>一般常用的是unc0ver或者checkra1n进行越狱，前者的稍微简单一点，后者稍微复杂一些。<br>这里本打算直接使用<a href="http://unc0ver.dev/" target="_blank" rel="noopener">unc0ver</a>进行越狱，结果安装后提示不支持。<br><img src="1678114608980-20a62fb2-fe56-4e36-b403-03a3ee01fa98-555750.png" alt="image.png"></p>
+<p>于是这里使用checkra1n进行越狱。</p>
+<p><img src="1675066606534-d67fb1cf-32d2-404d-b60b-4a84e010fb8a-321016.png" alt="image.png"><br>打开checkra1n虽然提示不支持14.6，这里<code>Start</code>按钮是灰色的。<br>选择<code>Options</code><br><img src="1675066632706-2f561ee7-721b-4222-a3d0-af5070781546-546389.png" alt="image.png"><br>勾选前两项。然后点击<code>Back</code>返回。此时<code>Start</code>按钮就可以使用了。</p>
+<p><img src="1675066654217-4d2384e2-1426-40c7-9609-c3273dd337c2-642089.png" alt="image.png"></p>
+<p>手机进入恢复模式<br><img src="1675066673619-44317ee5-5324-45db-b2d8-58a27e05f797-952033.png" alt="image.png"><br>根据提示进行越狱</p>
+<p><img src="1675066687340-36a4e331-c845-4eaa-aaaa-0fe213194399-370019.png" alt="image.png"></p>
+<p>点<code>Start</code>按钮</p>
+<p>然后一起按着关机键和Home键<br><img src="1675066770867-bfdd74cd-4b50-47ea-8a4d-4637201923a6-001976.png" alt="image.png"><br>倒计时结束松开关机键，仍然按着Home键。然后等待即可</p>
+<p><img src="1675067032189-e124d611-70b1-477e-9190-6d70c3f5f4ea-611456.png" alt="image.png"></p>
+<p>等手机重启后就进入了越狱模式。<br><img src="1675067412165-548b8b6b-a210-45a8-a303-1c2a1d42fc27-062660.png" alt="image.png"></p>
+<blockquote>
+<p>非完美越狱，重启后仍需重新越狱。</p>
+</blockquote>
+<p>使用checkra1n越狱后，需要手动安装cydia，之后才可以进行插件的安装。<br><a name="suTIf"></a></p>
+<h1 id="0x02-插件安装"><a href="#0x02-插件安装" class="headerlink" title="0x02 插件安装"></a>0x02 插件安装</h1><p><a name="Paa6a"></a></p>
+<h3 id="安装cydia"><a href="#安装cydia" class="headerlink" title="安装cydia"></a>安装cydia</h3><p>Cydia是一款用于iOS设备（如iPhone和iPad）的第三方应用商店，允许用户下载、安装和管理未经授权的应用程序、扩展和主题。<br>在checkra1n中安装cydia<br><img src="1678115413051-9439aeaf-8fe1-4bb1-a254-fbfccfb97d68-045700.png" alt="image.png"></p>
+<blockquote>
+<p>网络问题可以挂上科学。</p>
+</blockquote>
+<p><a name="CIgaU"></a></p>
+<h3 id="安装ssh"><a href="#安装ssh" class="headerlink" title="安装ssh"></a>安装ssh</h3><p>打开Cydia应用商店，搜索<code>openssh</code>，然后安装即可。<br><img src="1678116166466-fd615fb9-6570-4f96-883b-a8824e3a4cbb-586646.png" alt="image.png"></p>
+<p>安装后可以使用ssh进行访问，默认密码<code>alpine</code></p>
+<p> <img src="1678116733150-6bd4bf4d-96d5-4003-b0cd-658ab54c2e69-471031.png" alt="image.png"></p>
+<blockquote>
+<p>可以使用<code>iproxy 2222 22</code>将手机的22端口转发到2222端口。</p>
+</blockquote>
+<p><a name="zHI4J"></a></p>
+<h3 id="安装FlyJB-X-屏蔽越狱检测插件"><a href="#安装FlyJB-X-屏蔽越狱检测插件" class="headerlink" title="安装FlyJB X 屏蔽越狱检测插件"></a>安装FlyJB X 屏蔽越狱检测插件</h3><p>添加雷锋软件源<a href="http://apt.abcydia.com" target="_blank" rel="noopener">http://apt.abcydia.com</a>，搜索FlyJB<br><img src="1678117026770-2834618a-a472-4538-bad2-7bfd3f976d57-831327.png" alt="image.png"></p>
+<p><img src="1678117128035-d1b5504e-12d4-43bd-8e8b-aef2dff6cc05-797322.png" alt="image.png"><br><img src="1678117174840-87f16dd2-91af-43db-9d8c-a7e60b6d8655-851893.png" alt="image.png"><br><a name="IlJop"></a></p>
+<h3 id="安装frida"><a href="#安装frida" class="headerlink" title="安装frida"></a>安装frida</h3><p>添加源<a href="https://build.frida.re/" target="_blank" rel="noopener">https://build.frida.re/</a>,然后搜索frida<br>安装其它版本的frida可以从github下载所需的frida安装包，然后通过命令安装。例如安装15.1.17版本的Frida。<br>下载deb文件<br><a href="https://github.com/frida/frida/releases?page=3" target="_blank" rel="noopener">https://github.com/frida/frida/releases?page=3</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">scp -P2225 frida_15<span class="number">.1</span><span class="number">.17</span>_iphoneos-arm.deb root@localhost:/tmp</span><br><span class="line">dpkg -i frida_15<span class="number">.1</span><span class="number">.17</span>_iphoneos-arm.deb</span><br><span class="line">killall -HUP SpringBoard</span><br></pre></td></tr></table></figure>
+<p><img src="1678117329741-7bc9eb5f-8bff-4d0f-b9ac-5630c0beaa5e-860795.png" alt="image.png"></p>
+<p><img src="1678117782210-eee504dd-8993-4e35-a8f1-d3ae94c52fd0-927625.png" alt="image.png"><br><a name="Fj9Lg"></a></p>
+<h3 id="安装SSLKillSwitch"><a href="#安装SSLKillSwitch" class="headerlink" title="安装SSLKillSwitch"></a>安装SSLKillSwitch</h3><p>SSLKillSwitch是ios中常用解除SSL pining的插件。<br><a href="https://github.com/nabla-c0d3/ssl-kill-switch2" target="_blank" rel="noopener">https://github.com/nabla-c0d3/ssl-kill-switch2</a></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">wget https://github.com/nabla-c0d3/ssl-kill-switch2/releases/download/<span class="number">0.14</span>/com.nablac0d3.sslkillswitch2_0<span class="number">.14</span>.deb</span><br><span class="line">scp -P <span class="number">2224</span> com.nablac0d3.sslkillswitch2_0<span class="number">.14</span>.deb root@localhost:/tmp</span><br><span class="line">dpkg -i com.nablac0d3.sslkillswitch2_0<span class="number">.14</span>.deb</span><br><span class="line">killall -HUP SpringBoard</span><br></pre></td></tr></table></figure>
+<p>安装时需要确保Cydia已经安装了下列软件：<br>Debian Packager<br>Cydia Substrate<br>PreferenceLoader</p>
+<blockquote>
+<p>也可以直接添加源<a href="https://julioverne.github.io/" target="_blank" rel="noopener">https://julioverne.github.io/</a>，从上面安装（我使用这个APP直接闪退）</p>
+</blockquote>
+<p><img src="1678117594455-d6d4a316-a037-45b7-87a3-3bdac5682716-231139.png" alt="image.png"><br><img src="1678239711620-614be9e9-cf37-4c88-b316-b65883605d83-933121.png" alt="image.png"></p>
+<blockquote>
+<p>如果在设置中看不到SSL Kill Switch2，可以尝试重新安装PreferenceLoader、Cydia Substrate</p>
+</blockquote>
+<p><a name="rnnB4"></a></p>
+<h3 id="巨魔商店"><a href="#巨魔商店" class="headerlink" title="巨魔商店"></a>巨魔商店</h3><p>巨魔商店（TrollStore） 是一个永久可以安装未签名IPA应用程序，适用于iiOS 14.0 - 15.5b4, 15.6b1 - 15.6b5。<br>添加源<a href="https://havoc.app/" target="_blank" rel="noopener">https://havoc.app/</a>，搜索安装TrollStore Helper，然后安装TrollStore。<br><img src="1678118932247-f2d3cda3-9ff1-46e4-b982-9718a102b0c0-214427.png" alt="image.png"><br>更多请参考：<a href="https://github.com/opa334/TrollStore/blob/main/install_trollhelper.md" target="_blank" rel="noopener">https://github.com/opa334/TrollStore/blob/main/install_trollhelper.md</a><br><a name="pownE"></a></p>
+<h3 id="其它插件"><a href="#其它插件" class="headerlink" title="其它插件"></a>其它插件</h3><p>可以安装Filza、Terminal等，前者是文件管理，后者是手机上的终端工具。<br>Filza<br><img src="1678119168245-412596b3-8dc9-416a-9dbe-747c068da5f0-827670.png" alt="image.png"></p>
+<p>Terminal<br><img src="1678119249839-19fd3b24-96bf-4dd0-9610-09fbaa043399-572951.png" alt="image.png"></p>
+<p><a name="CMEKi"></a></p>
+<h1 id="0x03-注意事项"><a href="#0x03-注意事项" class="headerlink" title="0x03 注意事项"></a>0x03 注意事项</h1><ul>
+<li>在越狱过程中，一定要注意选择适合您设备的越狱工具和操作系统版本。如果选择错误，可能会导致设备无法使用或出现其他问题。</li>
+<li>越狱可能会使您的设备更加脆弱和不稳定，因此请谨慎考虑是否需要越狱。一些越狱应用和插件可能会导致设备出现问题或无法启动，甚至可能会损坏设备。</li>
+<li>在越狱后，一定要注意安装和使用可信的越狱应用和插件，以避免安全问题和系统崩溃等问题。一些未经官方认证的应用和插件可能包含恶意代码或病毒，会对设备造成损害。</li>
+</ul>
+</div><p class="post-tags"><i class="fa fa-tags" aria-hidden="true"></i><a href="/tags/IOS%E8%B6%8A%E7%8B%B1/">#IOS越狱</a><a href="/tags/checkra1n%E8%B6%8A%E7%8B%B1/">#checkra1n越狱</a><a href="/tags/%E8%B6%8A%E7%8B%B1%E6%8F%92%E4%BB%B6/">#越狱插件</a></p></article></div><footer><div class="paginator"><a href="/2023/11/08/vanished-login-page/" class="prev">上一篇</a><a href="/2022/10/28/Ground-Virus-Kill/" class="next">下一篇</a></div><div class="copyright"><p>© 2016 - 2023 <a href="https://fuping.site">浮萍</a>.</p></div></footer></div><script async src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-MML-AM_CHTML" integrity="sha384-crwIf/BuaWM9rM65iM+dWFldgQ1Un8jWZMuh3puxb8TOY9+linwLoI7ZHZT+aekW" crossorigin="anonymous"></script><script>(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;e=o.createElement(i);r=o.getElementsByTagName(i)[0];e.src='//www.google-analytics.com/analytics.js';r.parentNode.insertBefore(e,r)}(window,document,'script','ga'));ga('create',"UA-103156844-1",'auto');ga('send','pageview');</script><link rel="stylesheet" href="//cdn.datatables.net/1.10.7/css/jquery.dataTables.min.css" media="screen" type="text/css"><script src="//cdn.datatables.net/1.10.7/js/jquery.dataTables.min.js"></script><script>$(function(){$('.datatable').dataTable( {"order": [[ 0, "desc" ]],"iDisplayLength": -1,"lengthMenu": [[10, 25, 50, -1], [10, 25, 50, "All"]]} );});</script></body></html>
