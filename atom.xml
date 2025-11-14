@@ -6,7 +6,7 @@
   <link href="/atom.xml" rel="self"/>
   
   <link href="https://fuping.site/"/>
-  <updated>2025-11-13T02:10:36.911Z</updated>
+  <updated>2025-02-14T01:10:53.649Z</updated>
   <id>https://fuping.site/</id>
   
   <author>
@@ -15,33 +15,6 @@
   </author>
   
   <generator uri="https://hexo.io/">Hexo</generator>
-  
-  <entry>
-    <title>【IOS逆向】某APP越狱绕过</title>
-    <link href="https://fuping.site/2025/11/12/ios-jailbreak-easy-bypass/"/>
-    <id>https://fuping.site/2025/11/12/ios-jailbreak-easy-bypass/</id>
-    <published>2025-11-12T13:03:53.000Z</published>
-    <updated>2025-11-13T02:10:36.911Z</updated>
-    
-    <content type="html"><![CDATA[<h2 id="0x00-前言"><a href="#0x00-前言" class="headerlink" title="0x00 前言"></a>0x00 前言</h2><p>在对某iOS应用程序进行测试的过程中，遇到了多种检测机制，包括越狱检测、代理检测和Frida检测等。本文<font style="color:rgb(38, 38, 38);">简单分享一下”越狱绕过”的一种思路。</font></p><a id="more"></a><h2 id="0x01-过程"><a href="#0x01-过程" class="headerlink" title="0x01 过程"></a>0x01 过程</h2><h3 id="1-情况说明"><a href="#1-情况说明" class="headerlink" title="1. 情况说明"></a>1. 情况说明</h3><p>当我们尝试打开该App时，它会弹出一个提示框，指出设备已被越狱，并要求用户确认。一旦点击“确定”按钮，App就会退出。最初的解决思路是利用常见的工具或越狱绕过脚本来尝试绕过检测，但这种方法并未成功。</p><img src="01.png" style="zoom:50%;"><h3 id="2-Frida检测"><a href="#2-Frida检测" class="headerlink" title="2. Frida检测"></a>2. Frida检测</h3><p>该App还包含Frida检测机制，使用标准的Frida连接方式无法正常工作。通过使用<a href="https://github.com/suifei/fridare" target="_blank" rel="noopener">suifei/fridare</a>魔改Frida，可以绕过这一检测。这里不再赘述具体的细节。</p><h3 id="3-越狱检测"><a href="#3-越狱检测" class="headerlink" title="3. 越狱检测"></a>3. 越狱检测</h3><p>接下来，我们尝试了使用<code>objection</code>框架执行<code>ios jailbreak disable</code>命令来禁用越狱检测，但结果并不理想。同样的，使用其他常见的脚本也无法解决问题。</p><img src="02.png" style="zoom:50%;"><p>通过分析代码，我们发现许多与越狱相关的关键词和方法都被Frida进行了hook，但仍然未能完全绕过检测。</p><img src="03.png" style="zoom:50%;"><h3 id="4-绕过思路"><a href="#4-绕过思路" class="headerlink" title="4. 绕过思路"></a>4. 绕过思路</h3><p>经过进一步的观察，可以看到尽管App会显示越狱警告，但实际上并不会立即退出，而是在用户点击“确定”按钮后才真正退出。如果出现对话框后关闭这个对话框，或许就能绕过检测。</p><p>通过UI分析，我们发现这个警告是一个名为<code>XXXDialog</code>的对话框。</p><img src="04.png" style="zoom:50%;"><p>因此，我们可以使用Frida来hook该对话框，在消息中包含“越狱”关键字时自动关闭对话框。以下是实现这一功能的主要代码：</p><figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> XXXDialog = <span class="string">"XXXDialog"</span>;</span><br><span class="line"><span class="keyword">const</span> initWithTitleMethod = <span class="string">"- initWithTitle:message:"</span>;</span><br><span class="line"><span class="keyword">const</span> initWithTitleHook = <span class="built_in">eval</span>(<span class="string">'ObjC.classes.'</span> + XXXDialog + <span class="string">'["'</span> + initWithTitleMethod + <span class="string">'"]'</span>);</span><br><span class="line">Interceptor.attach(initWithTitleHook.implementation, &#123;</span><br><span class="line">  onEnter: <span class="function"><span class="keyword">function</span> (<span class="params">args</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">const</span> message = <span class="keyword">new</span> ObjC.Object(args[<span class="number">3</span>]); <span class="comment">// 获取message参数</span></span><br><span class="line">    <span class="keyword">const</span> dialogInstance = <span class="keyword">new</span> ObjC.Object(args[<span class="number">0</span>]); <span class="comment">// 获取self</span></span><br><span class="line">    <span class="built_in">console</span>.log(message.toString());</span><br><span class="line">    <span class="keyword">if</span> (message.toString().includes(<span class="string">"越狱"</span>)) &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">"关闭弹窗"</span>);</span><br><span class="line">      dialogInstance.dismiss(); <span class="comment">// 提前关闭对话框</span></span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure><p>通过上述方法，我们成功绕过了越狱检测，使得App能够正常运行。</p><img src="05.png" style="zoom:50%;"><img src="06.png" style="zoom:50%;"><h2 id="0x02-简单分析"><a href="#0x02-简单分析" class="headerlink" title="0x02 简单分析"></a>0x02 简单分析</h2><p>这里APP检测的流程大概是这样的</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">发现越狱 → 创建并显示提示弹窗 → 用户点“确定” → 在按钮回调里 <span class="built_in">exit</span>(0)</span><br></pre></td></tr></table></figure><p>伪代码:</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">// 伪代码</span><br><span class="line"><span class="keyword">if</span> (deviceIsJailbroken()) &#123;</span><br><span class="line">    dialog = [[XXXDialog alloc] initWithTitle:@<span class="string">"提示"</span> message:@<span class="string">"您的设备已越狱"</span>];</span><br><span class="line">    [dialog addButton:@<span class="string">"确定"</span> handler:^&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="built_in">exit</span>(0);           // 程序退出</span><br><span class="line">    &#125;];</span><br><span class="line">    [dialog show];</span><br><span class="line">    <span class="built_in">return</span>;                // 让 UI 阻塞后续流程</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure><p>当点击确定按钮后，程序会退出。我们不点击确定按钮，而是把它 <code>dismiss()</code>，后面的按钮回调就不会触发，<code>exit(0)</code> 也就不执行。于是主流程没有被“拦住”，App 继续跑，看起来就像“绕过了越狱限制”。</p><h2 id="0x03-总结"><a href="#0x03-总结" class="headerlink" title="0x03 总结"></a>0x03 总结</h2><p>这并不算真正的越狱绕过。问题在于应用把处置逻辑绑定在弹窗交互上：检测到越狱后未立即结束进程，而是等用户点“确定”再退出。通过在弹窗初始化时拦截并提前关闭，按钮回调不触发，进程继续运行，表面上呈现为“可在越狱设备使用”。根本原因是过于依赖 UI 而非统一的安全校验。在绕过其他APP时，可以考虑一下检测后退出的逻辑，如果需要用户确定后程序才退出，可以尝试一下hook对话框。这也是一种绕过的思路。</p>]]></content>
-    
-    <summary type="html">
-    
-      &lt;h2 id=&quot;0x00-前言&quot;&gt;&lt;a href=&quot;#0x00-前言&quot; class=&quot;headerlink&quot; title=&quot;0x00 前言&quot;&gt;&lt;/a&gt;0x00 前言&lt;/h2&gt;&lt;p&gt;在对某iOS应用程序进行测试的过程中，遇到了多种检测机制，包括越狱检测、代理检测和Frida检测等。本文&lt;font style=&quot;color:rgb(38, 38, 38);&quot;&gt;简单分享一下”越狱绕过”的一种思路。&lt;/font&gt;&lt;/p&gt;
-    
-    </summary>
-    
-    
-      <category term="IOS逆向" scheme="https://fuping.site/categories/IOS%E9%80%86%E5%90%91/"/>
-    
-    
-      <category term="IOS逆向" scheme="https://fuping.site/tags/IOS%E9%80%86%E5%90%91/"/>
-    
-      <category term="frida" scheme="https://fuping.site/tags/frida/"/>
-    
-      <category term="越狱绕过" scheme="https://fuping.site/tags/%E8%B6%8A%E7%8B%B1%E7%BB%95%E8%BF%87/"/>
-    
-  </entry>
   
   <entry>
     <title>吾爱破解2025春节红包活动番外篇第三题</title>
@@ -542,6 +515,33 @@
       <category term="SoulAPP" scheme="https://fuping.site/tags/SoulAPP/"/>
     
       <category term="双向证书" scheme="https://fuping.site/tags/%E5%8F%8C%E5%90%91%E8%AF%81%E4%B9%A6/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>安卓APP测试之HOOK大法-Xposed篇</title>
+    <link href="https://fuping.site/2019/01/28/Xposed-Hook-SoulApp/"/>
+    <id>https://fuping.site/2019/01/28/Xposed-Hook-SoulApp/</id>
+    <published>2019-01-28T09:21:56.000Z</published>
+    <updated>2019-01-29T02:03:00.394Z</updated>
+    
+    <content type="html"><![CDATA[<h2 id="0x01-前言"><a href="#0x01-前言" class="headerlink" title="0x01 前言"></a>0x01 前言</h2><p><a href="https://fuping.site/2019/01/25/Frida-Hook-SoulAPP/">安卓APP测试之HOOK大法-Frida篇</a>是基于Frida来实现HOOK，对于部分用户来说，一方面手机ROOT会带来一些风险，另一方面虽然愿意承担风险但是手机无法ROOT。这就需要采用另外一种方法–利用Xposed来进行HOOK。安装VirtualXposed之后，并不需要对手机进行ROOT，也可以来运行Xposed模块进行HOOK。</p><a id="more"></a><p><a href="https://github.com/android-hacker/VirtualXposed" target="_blank" rel="noopener">VirtualXposed</a>是基于<a href="https://github.com/asLody/VirtualApp" target="_blank" rel="noopener">VirtualApp</a> 和 <a href="https://github.com/tiann/epic" target="_blank" rel="noopener">epic</a> 在<strong>非ROOT</strong>环境下运行Xposed模块的实现（支持5.0~9.0)，就像它的介绍那样，<code>Use Xposed with a simple APP, without needing to root, unlock the bootloader, or flash a system image.</code>可以运行Xposed，不需要root，也不需要BL解锁和刷机。</p><h2 id="0x02-环境准备"><a href="#0x02-环境准备" class="headerlink" title="0x02 环境准备"></a>0x02 环境准备</h2><p>手机还是采用魅族Mx4，关闭ROOT权限。</p><p><img src="01.png" alt></p><p><img src="02.png" alt></p><p>下载并安装VirtualXposed，下载地址：<a href="https://github.com/android-hacker/VirtualXposed/releases" target="_blank" rel="noopener">https://github.com/android-hacker/VirtualXposed/releases</a></p><p>安装：</p><p><code>adb install VirtualXposed_0.16.1.apk</code></p><p>安装VirtualXposed之后，然后把手机上的APP安装到VirtualXposed上。</p><p><img src="03.png" alt></p><blockquote><p>由于VirtualXposed自带Xposed，这里我们只将需要的APP安装上去即可。</p></blockquote><p>开发Xposed模块采用的是Android Studio。</p><p>新建一个APP项目，添加依赖</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">provided &#39;de.robv.android.xposed:api:82&#39;</span><br><span class="line">provided &#39;de.robv.android.xposed:api:82:sources&#39;</span><br></pre></td></tr></table></figure><p><img src="04.png" alt></p><p>新建一个Main类，并实现<code>IXposedHookLoadPackage</code>接口。</p><p><img src="05.png" alt></p><p>在src/main下新建一个<code>Assets Folder</code>。</p><p><img src="06.png" alt></p><p>并在其中新建一个名称为<code>xposed_init</code>的文件，内容是实现HOOK的类，这里是<code>com.fuping.soulhook.Main</code>。</p><p>在AndroidManifest.xml中指定模块的名称</p><p><img src="07.png" alt></p><p>环境准备好了，下面就是模块的开发和HOOK了。</p><h2 id="0x03-利用Xposed进行HOOK"><a href="#0x03-利用Xposed进行HOOK" class="headerlink" title="0x03 利用Xposed进行HOOK"></a>0x03 利用Xposed进行HOOK</h2><p>由于上篇文章已经分析过了，这里就不进行分析了，打开app会提示<code>SoulApp 暂不支持模拟器，请稍后再试~</code>。我们需要对<code>cn.soulapp.android.utils.j.e()</code>进行HOOK，令其返回为false。</p><p>上面模块的框架已经搭好了，直接写HOOK代码，主要代码如下：</p><p><img src="08.png" alt></p><blockquote><p>注意，利用Android Studio进行模块的编写时，需要禁用<code>Instant Run</code>(<code>File -&gt; Settings -&gt; Build, Execution, Deployment -&gt; Instant Run</code>)。</p></blockquote><p>然后打包安装。再利用VirtualXposed将编写的HOOK模块添加到VirtualXposed中。</p><p><img src="09.png" alt></p><p>查看安装的app</p><p><img src="10.png" alt></p><p>然后在VirtualXposed中打开Xposed Installer，在模块中勾选soulHook。</p><p><img src="11.png" alt></p><p>重启VirtualXposed。</p><blockquote><p>Xposed模块每次修改都需要重启手机，在VirtualXposed中时，只需重启VirtualXposed即可，而且速度极快。</p></blockquote><p>在VirtualXposed中打开soulapp，并查看logcat输出内容。</p><p><img src="12.png" alt></p><p>APP可以正常进入，说明HOOK成功。</p><p>剩下的也比较简单了，例如查看<code>com.gongjiao.rr.tools.f.b</code>参数。</p><p>主要代码：</p><p><img src="13.png" alt></p><p>运行输入手机号查看Log信息：</p><p><img src="14.png" alt></p><p>也是毫无问题可以获取到参数的内容的。</p><p>获取到参数内容后，根据上篇文章的算法的分析，就可以自己构造进行加密了。</p><p>例如利用Python来实现，可以批量探测用户是否注册。</p><p><img src="15.png" alt></p><h2 id="0x04-总结"><a href="#0x04-总结" class="headerlink" title="0x04 总结"></a>0x04 总结</h2><p>本来Frida和Xposed是作为一篇文章的，但是由于篇幅问题分成了两篇。这两篇文章主要通过两种方式来进行HOOK，主要是为了说明HOOK的好处，没有说是为了对比哪个好哪个不好的。不过通过测试，如果安装了VirtualXposed，Xposed应该还是略胜一筹吧。第一点无需ROOT即可运行，第二点是解决了需要重启手机的麻烦（利用VirtualXposed可以秒重启），第三点就是携带方便了。不过各有各的好处，根据自己的习惯选择。也可以先用Frida进行HOOK，毕竟测试比较方便，然后最后移植到Xposed上。</p>]]></content>
+    
+    <summary type="html">
+    
+      &lt;h2 id=&quot;0x01-前言&quot;&gt;&lt;a href=&quot;#0x01-前言&quot; class=&quot;headerlink&quot; title=&quot;0x01 前言&quot;&gt;&lt;/a&gt;0x01 前言&lt;/h2&gt;&lt;p&gt;&lt;a href=&quot;https://fuping.site/2019/01/25/Frida-Hook-SoulAPP/&quot;&gt;安卓APP测试之HOOK大法-Frida篇&lt;/a&gt;是基于Frida来实现HOOK，对于部分用户来说，一方面手机ROOT会带来一些风险，另一方面虽然愿意承担风险但是手机无法ROOT。这就需要采用另外一种方法–利用Xposed来进行HOOK。安装VirtualXposed之后，并不需要对手机进行ROOT，也可以来运行Xposed模块进行HOOK。&lt;/p&gt;
+    
+    </summary>
+    
+    
+      <category term="Android技术" scheme="https://fuping.site/categories/Android%E6%8A%80%E6%9C%AF/"/>
+    
+    
+      <category term="安卓Hook" scheme="https://fuping.site/tags/%E5%AE%89%E5%8D%93Hook/"/>
+    
+      <category term="SoulAPP" scheme="https://fuping.site/tags/SoulAPP/"/>
+    
+      <category term="Xposed" scheme="https://fuping.site/tags/Xposed/"/>
     
   </entry>
   
